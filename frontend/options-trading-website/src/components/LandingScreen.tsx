@@ -42,7 +42,12 @@ export default function LandingScreen() {
               src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
               className="h-10 w-auto"
             /> */}
-            <Image src="/probo-logo.png" alt="test" height={200} width={200} />
+            <Image
+              src="/optixchange-logo.png"
+              alt="test"
+              height={200}
+              width={200}
+            />
           </div>
 
           <div className="mt-10">
