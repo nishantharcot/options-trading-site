@@ -26,16 +26,24 @@ async function processSubmission({
     case "CREATE_USER":
       try {
         const { userId } = request.data;
-        if (!INR_BALANCES.hasOwnProperty(userId)) {
+        if (!INR_BALANCES.has(userId)) {
+          console.log('yo nigga')
           INR_BALANCES.set(userId, { balance: 0, locked: 0 });
           STOCK_BALANCES.set(userId, new Map());
+          RedisManager.getInstance().sendToApi(clientID, {
+            type: "USER_CREATED",
+            payload: {
+              message: "User created successfully!",
+            },
+          });
+        } else {
+          RedisManager.getInstance().sendToApi(clientID, {
+            type: "USER_CREATED",
+            payload: {
+              message: "User already exists",
+            },
+          });
         }
-        RedisManager.getInstance().sendToApi(clientID, {
-          type: "USER_CREATED",
-          payload: {
-            message: "User created successfully!",
-          },
-        });
       } catch (e) {
         RedisManager.getInstance().sendToApi(clientID, {
           type: "REQUEST_FAILED",
