@@ -1,0 +1,1 @@
+{"root":["./src/redismanager.ts","./src/index.ts","./src/controllers/getroutescontroller.ts","./src/controllers/stockcontroller.ts","./src/controllers/symbolcontroller.ts","./src/controllers/usercontroller.ts","./src/routes/getroutes.ts","./src/routes/stockroutes.ts","./src/routes/symbolroutes.ts","./src/routes/userroutes.ts","./src/types/index.ts"],"version":"5.6.3"}

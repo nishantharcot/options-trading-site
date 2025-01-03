@@ -8,5 +8,12 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@types/mongoose": "^5.11.97",
+    "@types/node": "^22.10.5",
+    "dotenv": "^16.4.7",
+    "mongoose": "^8.9.3",
+    "redis": "^4.7.0"
+  }
 }
