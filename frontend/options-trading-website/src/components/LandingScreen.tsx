@@ -15,7 +15,7 @@ export default function LandingScreen() {
 
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
-    const userId = formData.get("text");
+    const userId = formData.get("text")?.toString();
 
     console.log("User Id:", userId);
 
@@ -24,11 +24,8 @@ export default function LandingScreen() {
     })
       .then((res) => res.json())
       .then((finalRes) => {
-        if (finalRes.message === "User already exists") {
-          setIsError(true);
-        } else {
-          router.push("/events");
-        }
+        localStorage.setItem("userId", userId || "");
+        router.push("/events");
       });
   };
 
