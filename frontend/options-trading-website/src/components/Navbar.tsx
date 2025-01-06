@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+
 import {
   Disclosure,
   DisclosureButton,
@@ -12,6 +13,7 @@ import {
 } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { PlusIcon } from "@heroicons/react/20/solid";
+import { MinusIcon } from "@heroicons/react/20/solid";
 import { WalletIcon } from "@heroicons/react/20/solid";
 import { CurrencyRupeeIcon } from "@heroicons/react/20/solid";
 import { FormEvent, useEffect, useState } from "react";
@@ -22,17 +24,95 @@ import {
   DialogTitle,
 } from "@headlessui/react";
 import { CheckIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
+
+type EventDetails = {
+  event: string;
+  yesPrice: number;
+  noPrice: number;
+};
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [eventOpen, setEventOpen] = useState(false);
+  const [mintTokensOpen, setmintTokensOpen] = useState(false);
   const [amount, setAmount] = useState(0);
   const [refetch, setRefetch] = useState(true);
 
+  const [mintEventSelected, setmintEventSelected] = useState("");
+
+  const [mintPrice, setmintPrice] = useState<number>(3.5);
+  const [mintNumberOfTokens, setmintNumberOfTokens] = useState<number>();
+
   const userId = localStorage.getItem("userId");
+  const [events, setEvents] = useState<EventDetails[]>([]);
+
+  useEffect(() => {
+    fetch("http://localhost:3000/orderbook")
+      .then((res) => res.json())
+      .then((finalRes) => {
+        const events: EventDetails[] = [];
+
+        finalRes.forEach((data: any) => {
+          const eventName = data[0];
+          let yP = 10,
+            nP = 10;
+
+          const noData = Object.entries(data[1].no);
+          const yesData = Object.entries(data[1].yes);
+
+          noData.forEach((data) => {
+            nP = Math.min(nP, Number(data[0][0]));
+          });
+
+          yesData.forEach((data) => {
+            yP = Math.min(yP, Number(data[0][0]));
+          });
+
+          events.push({
+            event: eventName,
+            yesPrice: yP,
+            noPrice: nP,
+          });
+        });
+
+        setEvents(events);
+        // console.log("events check:- ", events);
+      });
+  }, []);
+
+  const handleNumberOfTokens = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setmintNumberOfTokens(Number(e.target.value));
+    console.log("mintNumberOfTokens:- ", mintNumberOfTokens);
+  };
 
   const addFundClick = () => {
     setOpen(true);
+  };
+
+  const mintTokensClick = () => {
+    setmintTokensOpen(true);
+  };
+
+  const mintTokens = async () => {
+    console.log("he;;");
+
+    const tempRes = await fetch("http://localhost:3000/trade/mint", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: userId,
+        stockSymbol: mintEventSelected,
+        quantity: mintNumberOfTokens,
+        price: mintPrice * 100,
+      }),
+    });
+
+    const res = await tempRes.json();
+
+    console.log("res check:- ", res);
   };
 
   const addFund = (e: FormEvent<HTMLFormElement>) => {
@@ -140,18 +220,15 @@ export default function Navbar() {
                   </button>
                 </form>
               </div>
-              {/* <button
-                type="submit"
-                className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Recharge
-              </button> */}
-              <a
-                href="#"
-                className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              >
-                Mint Tokens
-              </a>
+              <div className="flex items-center">
+                <button
+                  type="submit"
+                  onClick={mintTokensClick}
+                  className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-900"
+                >
+                  Mint Tokens
+                </button>
+              </div>
             </div>
           </div>
           <div className="flex items-center">
@@ -394,6 +471,119 @@ export default function Navbar() {
                   </button>
                 </div>
               </form>
+            </DialogPanel>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Mint Tokens Modal */}
+      <Dialog
+        open={mintTokensOpen}
+        onClose={setmintTokensOpen}
+        className="relative z-10"
+      >
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-gray-500/75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
+        />
+
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <DialogPanel
+              transition
+              className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all data-[closed]:translate-y-4 data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in sm:my-8 sm:w-full sm:max-w-sm sm:p-6 data-[closed]:sm:translate-y-0 data-[closed]:sm:scale-95"
+            >
+              <div className="flex justify-center">
+                <Menu as="div" className="relative inline-block text-left">
+                  <div>
+                    <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                      Select Event
+                      <ChevronDownIcon
+                        aria-hidden="true"
+                        className="-mr-1 size-5 text-gray-400"
+                      />
+                    </MenuButton>
+                  </div>
+
+                  <MenuItems
+                    transition
+                    className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                  >
+                    <div className="py-1">
+                      {events.map((event, index) => {
+                        return (
+                          <MenuItem key={index}>
+                            <a
+                              href="#"
+                              onClick={() => setmintEventSelected(event.event)}
+                              className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900 data-[focus]:outline-none"
+                            >
+                              {event.event}
+                            </a>
+                          </MenuItem>
+                        );
+                      })}
+                    </div>
+                  </MenuItems>
+                </Menu>
+              </div>
+
+              <div>
+                <div>
+                  <label
+                    htmlFor="event"
+                    className="block text-sm/6 font-medium text-gray-900"
+                  >
+                    Set Price
+                  </label>
+                  <div className="mt-2">
+                    <div className="flex gap-x-6">
+                      <button
+                        type="button"
+                        onClick={() => setmintPrice(mintPrice - 0.5)}
+                        className="rounded-full bg-indigo-600 p-1 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                      >
+                        <MinusIcon aria-hidden="true" className="size-5" />
+                      </button>
+                      <div className="text-black w-[10px]">{mintPrice}</div>
+                      <button
+                        type="button"
+                        onClick={() => setmintPrice(mintPrice + 0.5)}
+                        className="rounded-full bg-indigo-600 p-1 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                      >
+                        <PlusIcon aria-hidden="true" className="size-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <label
+                    htmlFor="token_count"
+                    className="block text-sm/6 font-medium text-gray-900"
+                  >
+                    Number of tokens
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="token_count"
+                      name="text"
+                      onChange={handleNumberOfTokens}
+                      type="text"
+                      placeholder="20"
+                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-5 sm:mt-6">
+                  <button
+                    onClick={mintTokens}
+                    className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </div>
             </DialogPanel>
           </div>
         </div>
