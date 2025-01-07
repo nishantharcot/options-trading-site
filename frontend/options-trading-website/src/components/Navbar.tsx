@@ -53,27 +53,33 @@ export default function Navbar() {
       .then((finalRes) => {
         const events: EventDetails[] = [];
 
+        if (!finalRes) {
+          return;
+        }
+
         finalRes.forEach((data: any) => {
+          console.log("data check:- ", data);
           const eventName = data[0];
           let yP = 10,
             nP = 10;
 
-          const noData = Object.entries(data[1].no);
-          const yesData = Object.entries(data[1].yes);
+          if (data[1].hasOwnProperty("no") && data[1].hasOwnProperty("yes")) {
+            const noData = Object.entries(data[1].no);
+            noData.forEach((data) => {
+              nP = Math.min(nP, Number(data[0][0]));
+            });
 
-          noData.forEach((data) => {
-            nP = Math.min(nP, Number(data[0][0]));
-          });
+            const yesData = Object.entries(data[1].yes);
+            yesData.forEach((data) => {
+              yP = Math.min(yP, Number(data[0][0]));
+            });
 
-          yesData.forEach((data) => {
-            yP = Math.min(yP, Number(data[0][0]));
-          });
-
-          events.push({
-            event: eventName,
-            yesPrice: yP,
-            noPrice: nP,
-          });
+            events.push({
+              event: eventName,
+              yesPrice: yP,
+              noPrice: nP,
+            });
+          }
         });
 
         setEvents(events);
@@ -197,11 +203,6 @@ export default function Navbar() {
               </DisclosureButton>
             </div>
             <div className="flex shrink-0 items-center">
-              {/* <img
-                alt="Your Company"
-                src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
-                className="h-8 w-auto"
-              /> */}
               <Image
                 src="/optixchange-logo.png"
                 alt="test"
@@ -249,60 +250,6 @@ export default function Navbar() {
                 </div>
               </button>
             </div>
-            <div className="hidden md:ml-4 md:flex md:shrink-0 md:items-center">
-              <button
-                type="button"
-                className="relative rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              >
-                <span className="absolute -inset-1.5" />
-                <span className="sr-only">View notifications</span>
-                <BellIcon aria-hidden="true" className="size-6" />
-              </button>
-
-              {/* Profile dropdown */}
-              <Menu as="div" className="relative ml-3">
-                <div>
-                  <MenuButton className="relative flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    <span className="absolute -inset-1.5" />
-                    <span className="sr-only">Open user menu</span>
-                    <img
-                      alt=""
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                      className="size-8 rounded-full"
-                    />
-                  </MenuButton>
-                </div>
-                <MenuItems
-                  transition
-                  className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-200 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
-                >
-                  <MenuItem>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
-                    >
-                      Your Profile
-                    </a>
-                  </MenuItem>
-                  <MenuItem>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
-                    >
-                      Settings
-                    </a>
-                  </MenuItem>
-                  <MenuItem>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
-                    >
-                      Sign out
-                    </a>
-                  </MenuItem>
-                </MenuItems>
-              </Menu>
-            </div>
           </div>
         </div>
       </div>
@@ -315,79 +262,29 @@ export default function Navbar() {
             href="#"
             className="block border-l-4 border-indigo-500 bg-indigo-50 py-2 pl-3 pr-4 text-base font-medium text-indigo-700 sm:pl-5 sm:pr-6"
           >
-            Dashboard
+            <form onSubmit={(e) => createEvent(e)}>
+              <button
+                type="submit"
+                onClick={createEventClick}
+                className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-900"
+              >
+                Create an Event
+              </button>
+            </form>
           </DisclosureButton>
           <DisclosureButton
             as="a"
             href="#"
             className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 sm:pl-5 sm:pr-6"
           >
-            Team
-          </DisclosureButton>
-          <DisclosureButton
-            as="a"
-            href="#"
-            className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 sm:pl-5 sm:pr-6"
-          >
-            Projects
-          </DisclosureButton>
-          <DisclosureButton
-            as="a"
-            href="#"
-            className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700 sm:pl-5 sm:pr-6"
-          >
-            Calendar
-          </DisclosureButton>
-        </div>
-        <div className="border-t border-gray-200 pb-3 pt-4">
-          <div className="flex items-center px-4 sm:px-6">
-            <div className="shrink-0">
-              <img
-                alt=""
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                className="size-10 rounded-full"
-              />
-            </div>
-            <div className="ml-3">
-              <div className="text-base font-medium text-gray-800">
-                Tom Cook
-              </div>
-              <div className="text-sm font-medium text-gray-500">
-                tom@example.com
-              </div>
-            </div>
             <button
-              type="button"
-              className="relative ml-auto shrink-0 rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              type="submit"
+              onClick={mintTokensClick}
+              className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-900"
             >
-              <span className="absolute -inset-1.5" />
-              <span className="sr-only">View notifications</span>
-              <BellIcon aria-hidden="true" className="size-6" />
+              Mint Tokens
             </button>
-          </div>
-          <div className="mt-3 space-y-1">
-            <DisclosureButton
-              as="a"
-              href="#"
-              className="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800 sm:px-6"
-            >
-              Your Profile
-            </DisclosureButton>
-            <DisclosureButton
-              as="a"
-              href="#"
-              className="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800 sm:px-6"
-            >
-              Settings
-            </DisclosureButton>
-            <DisclosureButton
-              as="a"
-              href="#"
-              className="block px-4 py-2 text-base font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-800 sm:px-6"
-            >
-              Sign out
-            </DisclosureButton>
-          </div>
+          </DisclosureButton>
         </div>
       </DisclosurePanel>
 
@@ -494,42 +391,38 @@ export default function Navbar() {
               transition
               className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all data-[closed]:translate-y-4 data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in sm:my-8 sm:w-full sm:max-w-sm sm:p-6 data-[closed]:sm:translate-y-0 data-[closed]:sm:scale-95"
             >
-              <div className="flex justify-center">
-                <Menu as="div" className="relative inline-block text-left">
-                  <div>
-                    <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                      Select Event
-                      <ChevronDownIcon
-                        aria-hidden="true"
-                        className="-mr-1 size-5 text-gray-400"
-                      />
-                    </MenuButton>
-                  </div>
-
-                  <MenuItems
-                    transition
-                    className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+              <div>
+                <label
+                  htmlFor="event"
+                  className="block text-sm/6 font-medium text-gray-900"
+                >
+                  Select Event
+                </label>
+                <div className="mt-2 grid grid-cols-1">
+                  <select
+                    id="event"
+                    name="event"
+                    className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pl-3 pr-8 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                   >
-                    <div className="py-1">
-                      {events.map((event, index) => {
-                        return (
-                          <MenuItem key={index}>
-                            <a
-                              href="#"
-                              onClick={() => setmintEventSelected(event.event)}
-                              className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900 data-[focus]:outline-none"
-                            >
-                              {event.event}
-                            </a>
-                          </MenuItem>
-                        );
-                      })}
-                    </div>
-                  </MenuItems>
-                </Menu>
+                    {events.map((event, index) => {
+                      return (
+                        <option
+                          onClick={() => setmintEventSelected(event.event)}
+                          key={index}
+                        >
+                          {event.event}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <ChevronDownIcon
+                    aria-hidden="true"
+                    className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
+                  />
+                </div>
               </div>
 
-              <div>
+              <div className="mt-2">
                 <div>
                   <label
                     htmlFor="event"

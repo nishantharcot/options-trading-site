@@ -697,7 +697,7 @@ async function processSubmission({
 
         // STEP 2:- UPDATE STOCK BALANCES
         const stockBalanceData = STOCK_BALANCES.get(userId)!;
-        const stockAlreadyExists = stockBalanceData!.get(stockSymbol);
+        const stockAlreadyExists = stockBalanceData.get(stockSymbol)
 
         if (stockAlreadyExists) {
           const yesExists = stockBalanceData.get(stockSymbol)?.yes;

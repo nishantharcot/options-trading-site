@@ -18,31 +18,36 @@ export default function EventsScreen() {
       .then((finalRes) => {
         const events: EventDetails[] = [];
 
-        finalRes.forEach((data) => {
+        if (!finalRes) {
+          return;
+        }
+
+        finalRes.forEach((data: any) => {
+          console.log("data check:- ", data);
           const eventName = data[0];
           let yP = 10,
             nP = 10;
 
-          const noData = Object.entries(data[1].no);
-          const yesData = Object.entries(data[1].yes);
+          if (data[1].hasOwnProperty("no") && data[1].hasOwnProperty("yes")) {
+            const noData = Object.entries(data[1].no);
+            noData.forEach((data) => {
+              nP = Math.min(nP, Number(data[0][0]));
+            });
 
-          noData.forEach((data) => {
-            nP = Math.min(nP, Number(data[0][0]));
-          });
+            const yesData = Object.entries(data[1].yes);
+            yesData.forEach((data) => {
+              yP = Math.min(yP, Number(data[0][0]));
+            });
 
-          yesData.forEach((data) => {
-            yP = Math.min(yP, Number(data[0][0]));
-          });
-
-          events.push({
-            event: eventName,
-            yesPrice: yP,
-            noPrice: nP,
-          });
+            events.push({
+              event: eventName,
+              yesPrice: yP,
+              noPrice: nP,
+            });
+          }
         });
 
         setEvents(events);
-        console.log("events check:- ", events);
       });
   }, []);
 
@@ -55,9 +60,18 @@ export default function EventsScreen() {
             All events Predict and Win
           </h3>
         </div>
-        {events.map((data, index) => {
-          return <div key={index}>{data.event}</div>;
-        })}
+        <div className="grid grid-cols-3 mt-12 gap-x-4">
+          {events.map((data, index) => {
+            return (
+              <div
+                key={index}
+                className="overflow-hidden rounded-lg bg-white shadow"
+              >
+                <div className="px-4 py-5 sm:p-6">{data.event}</div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </>
   );
