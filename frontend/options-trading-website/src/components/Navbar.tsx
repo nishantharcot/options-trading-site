@@ -113,6 +113,7 @@ export default function Navbar() {
     const res = await tempRes.json();
 
     console.log("res check:- ", res);
+    setRefetch(!refetch);
   };
 
   const addFund = (e: FormEvent<HTMLFormElement>) => {

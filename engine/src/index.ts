@@ -685,6 +685,7 @@ async function processSubmission({
               message: "Insufficient User Balance",
             },
           });
+          break;
         }
 
         // STEP 1:- UPDATE USER BALANCE
