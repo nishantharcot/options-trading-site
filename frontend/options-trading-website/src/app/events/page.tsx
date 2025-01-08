@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type EventDetails = {
   event: string;
@@ -11,6 +12,10 @@ type EventDetails = {
 
 export default function EventsScreen() {
   const [events, setEvents] = useState<EventDetails[]>([]);
+
+  const router = useRouter();
+
+  console.log("events check:- ", events);
 
   useEffect(() => {
     fetch("http://localhost:3000/orderbook")
@@ -66,6 +71,9 @@ export default function EventsScreen() {
               <div
                 key={index}
                 className="overflow-hidden rounded-lg bg-white shadow"
+                onClick={() =>
+                  router.push("/events/" + encodeURIComponent(data.event))
+                }
               >
                 <div className="px-4 py-5 sm:p-6">{data.event}</div>
               </div>
