@@ -3,7 +3,7 @@ const API_URL = "http://localhost:3000";
 
 const events = ["Will 2024 be recorded as the hottest year on record by NASA?", "Zomato's revenue to be ₹5400 crore or more for Q3 of FY25?", "Elon Musk to rank higher than Mark Zuckerberg according to Forbes World 's Billionaires List 2025?"];
 
-const possiblePrices = [950, 900, 850, 800, 750, 700, 650, 600, 550, 500]
+const possiblePrices = [950, 900, 850, 800, 750, 700, 650, 600, 550, 500, 450, 400, 350, 300, 250]
 
 const getRandomIndex = (max: number) => {
   return Math.floor(Math.random() * max)
@@ -92,7 +92,7 @@ async function main() {
 
     const sellOrdersPromises = events.map(async event => {
       const userId = users[getRandomIndex(100)]
-      const price = possiblePrices[getRandomIndex(10)]
+      const price = possiblePrices[getRandomIndex(15)]
 
       const quantity = 1+getRandomIndex(5);
 
