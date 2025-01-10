@@ -36,14 +36,6 @@ export default function EventDetailsScreen() {
       console.log("order type:- ", orderType);
       console.log("stock type:- ", stockType);
 
-      //   {
-      //     "userId": "s1",
-      //     "stockSymbol": "BTC",
-      //     "quantity": 1000,
-      //     "price": 900,
-      //     "stockType": "no"
-      // }
-
       const res = await fetch(`http://localhost:3000/order/${orderType}`, {
         method: "POST",
         headers: {
@@ -77,15 +69,13 @@ export default function EventDetailsScreen() {
 
   const [tabs, setTabs] = useState(initialTabs);
 
-  console.log("tabs check:- ", tabs);
-
   const handleTabClick = (clickedTabName) => {
     console.log("clickedTabName:- ", clickedTabName);
     setStockType(clickedTabName);
     setTabs((prevTabs) =>
       prevTabs.map((tab) => ({
         ...tab,
-        current: tab.name === clickedTabName, // Set `current` to true for the clicked tab
+        current: tab.name === clickedTabName,
       }))
     );
   };
@@ -95,11 +85,6 @@ export default function EventDetailsScreen() {
       try {
         const res = await fetch(`http://localhost:3000/orderbook/${eventId}`);
         const res2 = await res.json();
-
-        console.log("typeof res2:- ", typeof res2);
-        console.log("res2:- ", res2);
-        console.log(res2[0]);
-        console.log(Object.entries(res2[0].no));
 
         const noDataArr: orderbookData[] = [];
         const yesDataArr: orderbookData[] = [];
@@ -121,9 +106,6 @@ export default function EventDetailsScreen() {
             quantity: Number(data[1].total),
           });
         });
-
-        console.log("noDataArr check:- ", noDataArr);
-        console.log("yesDataArr check:- ", yesDataArr);
 
         setNoData(noDataArr);
         setYesData(yesDataArr);

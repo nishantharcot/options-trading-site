@@ -6,24 +6,14 @@ import {
   Disclosure,
   DisclosureButton,
   DisclosurePanel,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
 } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import { MinusIcon } from "@heroicons/react/20/solid";
 import { WalletIcon } from "@heroicons/react/20/solid";
 import { CurrencyRupeeIcon } from "@heroicons/react/20/solid";
 import { FormEvent, useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  DialogTitle,
-} from "@headlessui/react";
-import { CheckIcon } from "@heroicons/react/24/outline";
+import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
 type EventDetails = {
@@ -83,7 +73,6 @@ export default function Navbar() {
         });
 
         setEvents(events);
-        // console.log("events check:- ", events);
       });
   }, []);
 
@@ -256,7 +245,6 @@ export default function Navbar() {
 
       <DisclosurePanel className="md:hidden">
         <div className="space-y-1 pb-3 pt-2">
-          {/* Current: "bg-indigo-50 border-indigo-500 text-indigo-700", Default: "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700" */}
           <DisclosureButton
             as="a"
             href="#"

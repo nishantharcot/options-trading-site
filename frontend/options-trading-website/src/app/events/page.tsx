@@ -15,8 +15,6 @@ export default function EventsScreen() {
 
   const router = useRouter();
 
-  console.log("events check:- ", events);
-
   useEffect(() => {
     fetch("http://localhost:3000/orderbook")
       .then((res) => res.json())
