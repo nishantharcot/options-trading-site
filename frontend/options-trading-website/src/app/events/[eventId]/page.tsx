@@ -1,11 +1,15 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { MinusIcon } from "@heroicons/react/16/solid";
 import { PlusIcon } from "@heroicons/react/16/solid";
+import {
+  UserBalanceContextType,
+  UserBalanceContext,
+} from "@/context/UserBalanceContext";
 
 type orderbookData = {
   price: number;
@@ -14,6 +18,7 @@ type orderbookData = {
 
 export default function EventDetailsScreen() {
   const { eventId }: { eventId: string } = useParams();
+  const [refetch, setRefetch] = useState(true);
 
   const userId = localStorage.getItem("userId");
   const decodedEventId = decodeURIComponent(eventId);
@@ -27,6 +32,21 @@ export default function EventDetailsScreen() {
   const [stockType, setStockType] = useState("no");
 
   console.log("orderType check:- ", orderType);
+
+  const { setUserBalance }: UserBalanceContextType =
+    useContext(UserBalanceContext);
+
+  useEffect(() => {
+    if (userId) {
+      fetch(`http://localhost:3000/balances/inr/${userId}`)
+        .then((res) => res.json())
+        .then((finalRes) => {
+          const paise = Number(finalRes.message);
+          const rup = paise / 100;
+          setUserBalance(rup);
+        });
+    }
+  }, [userId, refetch]);
 
   const placeOrder = () => {
     async function order() {
@@ -53,6 +73,7 @@ export default function EventDetailsScreen() {
       const res2 = await res.json();
 
       console.log("res2:- ", res2);
+      setRefetch(!refetch);
     }
 
     order();

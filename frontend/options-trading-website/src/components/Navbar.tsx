@@ -12,9 +12,13 @@ import { PlusIcon } from "@heroicons/react/20/solid";
 import { MinusIcon } from "@heroicons/react/20/solid";
 import { WalletIcon } from "@heroicons/react/20/solid";
 import { CurrencyRupeeIcon } from "@heroicons/react/20/solid";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useContext, useEffect, useState } from "react";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import {
+  UserBalanceContextType,
+  UserBalanceContext,
+} from "@/context/UserBalanceContext";
 
 type EventDetails = {
   event: string;
@@ -26,7 +30,11 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [eventOpen, setEventOpen] = useState(false);
   const [mintTokensOpen, setmintTokensOpen] = useState(false);
-  const [amount, setAmount] = useState(0);
+  const { userBalance, setUserBalance }: UserBalanceContextType =
+    useContext(UserBalanceContext);
+
+  console.log("userBalance:- ", userBalance);
+
   const [refetch, setRefetch] = useState(true);
 
   const [mintEventSelected, setmintEventSelected] = useState("");
@@ -166,7 +174,7 @@ export default function Navbar() {
         .then((finalRes) => {
           const paise = Number(finalRes.message);
           const rup = paise / 100;
-          setAmount(rup);
+          setUserBalance(rup);
         });
     }
   }, [userId, refetch]);
@@ -235,7 +243,7 @@ export default function Navbar() {
                     aria-hidden="true"
                     className="-ml-0.5 size-4"
                   />
-                  <span>{amount}</span>
+                  <span>{userBalance}</span>
                 </div>
               </button>
             </div>
