@@ -10,9 +10,13 @@ import {
   UserBalanceContextType,
   UserBalanceContext,
 } from "@/context/UserBalanceContext";
+import { SignalingManager } from "@/utils/SignalingManager";
+import { OrderType } from "@/app/types";
+import { sortByPrice } from "@/utils/helperFunctions";
 
 type orderbookData = {
-  price: number;
+  id: number;
+  price: string;
   quantity: number;
 };
 
@@ -31,7 +35,7 @@ export default function EventDetailsScreen() {
   const [orderType, setOrderType] = useState("Buy");
   const [stockType, setStockType] = useState("no");
 
-  console.log("orderType check:- ", orderType);
+  // console.log("orderType check:- ", orderType);
 
   const { setUserBalance }: UserBalanceContextType =
     useContext(UserBalanceContext);
@@ -50,11 +54,11 @@ export default function EventDetailsScreen() {
 
   const placeOrder = () => {
     async function order() {
-      console.log("price:- ", price);
-      console.log("quantity:- ", quantity);
-      console.log("userId:- ", localStorage.getItem("userId"));
-      console.log("order type:- ", orderType);
-      console.log("stock type:- ", stockType);
+      // console.log("price:- ", price);
+      // console.log("quantity:- ", quantity);
+      // console.log("userId:- ", localStorage.getItem("userId"));
+      // console.log("order type:- ", orderType);
+      // console.log("stock type:- ", stockType);
 
       const res = await fetch(`http://localhost:3000/order/${orderType}`, {
         method: "POST",
@@ -72,7 +76,7 @@ export default function EventDetailsScreen() {
 
       const res2 = await res.json();
 
-      console.log("res2:- ", res2);
+      // console.log("res2:- ", res2);
       setRefetch(!refetch);
     }
 
@@ -91,7 +95,7 @@ export default function EventDetailsScreen() {
   const [tabs, setTabs] = useState(initialTabs);
 
   const handleTabClick = (clickedTabName) => {
-    console.log("clickedTabName:- ", clickedTabName);
+    // console.log("clickedTabName:- ", clickedTabName);
     setStockType(clickedTabName);
     setTabs((prevTabs) =>
       prevTabs.map((tab) => ({
@@ -111,8 +115,8 @@ export default function EventDetailsScreen() {
         const yesDataArr: orderbookData[] = [];
 
         Object.entries(res2[0].no).forEach((data) => {
-          console.log("data check 0:- ", data[0]);
-          console.log("data check 1:- ", data[1].total);
+          // console.log("data check 0:- ", data[0]);
+          // console.log("data check 1:- ", data[1].total);
           noDataArr.push({
             price: Number(data[0]),
             quantity: Number(data[1].total),
@@ -120,8 +124,8 @@ export default function EventDetailsScreen() {
         });
 
         Object.entries(res2[0].yes).forEach((data) => {
-          console.log("data check 0:- ", data[0]);
-          console.log("data check 1:- ", data[1].total);
+          // console.log("data check 0:- ", data[0]);
+          // console.log("data check 1:- ", data[1].total);
           yesDataArr.push({
             price: Number(data[0]),
             quantity: Number(data[1].total),
@@ -135,6 +139,55 @@ export default function EventDetailsScreen() {
       }
     }
     getEventData();
+
+    SignalingManager.getInstance().registerCallback(
+      decodedEventId,
+      (data: OrderType) => {
+        console.log("data check:-", data);
+        const orderbook = data;
+        const yesArray = [];
+        const noArray = [];
+
+        // console.log(orderbook);
+
+        for (const stockType of ["yes", "no"] as const) {
+          if (!orderbook[stockType]) {
+            continue;
+          }
+          const orderPrice = orderbook[stockType];
+          let id = 1;
+
+          if (orderPrice) {
+            for (const price in orderPrice) {
+              const orderDetails = orderPrice[price];
+              const total = orderDetails.total;
+
+              if (stockType == "yes") {
+                yesArray.push({ id, price, quantity: total });
+                id++;
+              } else {
+                noArray.push({ id, price, quantity: total });
+                id++;
+              }
+            }
+          }
+        }
+
+        setYesData(sortByPrice(yesArray));
+      }
+    );
+    SignalingManager.getInstance().sendMessage({
+      method: "SUBSCRIBE",
+      params: [decodedEventId],
+    });
+
+    return () => {
+      SignalingManager.getInstance().deRegisterCallback(eventId);
+      SignalingManager.getInstance().sendMessage({
+        method: "UNSUBSCRIBE",
+        params: [decodedEventId],
+      });
+    };
   }, [eventId]);
 
   const [price, setPrice] = useState(8);
