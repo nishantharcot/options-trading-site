@@ -3,7 +3,12 @@
 import Navbar from "@/components/Navbar";
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ChevronDownIcon } from "@heroicons/react/16/solid";
+import {
+  CheckCircleIcon,
+  ChevronDownIcon,
+  XMarkIcon,
+  XCircleIcon,
+} from "@heroicons/react/16/solid";
 import { MinusIcon } from "@heroicons/react/16/solid";
 import { PlusIcon } from "@heroicons/react/16/solid";
 import {
@@ -13,6 +18,7 @@ import {
 import { SignalingManager } from "@/utils/SignalingManager";
 import { OrderType } from "@/app/types";
 import { sortByPrice } from "@/utils/helperFunctions";
+import { Transition } from "@headlessui/react";
 
 type orderbookData = {
   id: number;
@@ -36,6 +42,9 @@ export default function EventDetailsScreen() {
   const [stockType, setStockType] = useState("no");
 
   // console.log("orderType check:- ", orderType);
+  const [showNotification, setshowNotification] = useState(false);
+  const [notificationContent, setNotificationContent] = useState("");
+  const [notificationSuccess, setnotificationSuccess] = useState(true);
 
   const { setUserBalance }: UserBalanceContextType =
     useContext(UserBalanceContext);
@@ -54,12 +63,6 @@ export default function EventDetailsScreen() {
 
   const placeOrder = () => {
     async function order() {
-      // console.log("price:- ", price);
-      // console.log("quantity:- ", quantity);
-      // console.log("userId:- ", localStorage.getItem("userId"));
-      // console.log("order type:- ", orderType);
-      // console.log("stock type:- ", stockType);
-
       const res = await fetch(`http://localhost:3000/order/${orderType}`, {
         method: "POST",
         headers: {
@@ -78,6 +81,13 @@ export default function EventDetailsScreen() {
 
       // console.log("res2:- ", res2);
       setRefetch(!refetch);
+      setshowNotification(true);
+      setNotificationContent(res2.message);
+      if (res2.message.includes("Insufficient")) {
+        setnotificationSuccess(false);
+      } else {
+        setnotificationSuccess(true);
+      }
     }
 
     order();
@@ -425,6 +435,54 @@ export default function EventDetailsScreen() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Notification */}
+      <div
+        aria-live="assertive"
+        className="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6"
+      >
+        <div className="flex w-full flex-col items-center space-y-4 sm:items-end">
+          {/* Notification panel, dynamically insert this into the live region when it needs to be displayed */}
+          <Transition show={showNotification}>
+            <div className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/5 transition data-[closed]:data-[enter]:translate-y-2 data-[enter]:transform data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-100 data-[enter]:ease-out data-[leave]:ease-in data-[closed]:data-[enter]:sm:translate-x-2 data-[closed]:data-[enter]:sm:translate-y-0">
+              <div className="p-4">
+                <div className="flex items-start">
+                  <div className="shrink-0">
+                    {notificationSuccess ? (
+                      <CheckCircleIcon
+                        aria-hidden="true"
+                        className="size-6 text-green-400"
+                      />
+                    ) : (
+                      <XCircleIcon
+                        aria-hidden="true"
+                        className="size-6 text-red-400"
+                      />
+                    )}
+                  </div>
+                  <div className="ml-3 w-0 flex-1 pt-0.5">
+                    <p className="text-sm font-medium text-gray-900">
+                      {notificationContent}
+                    </p>
+                  </div>
+                  <div className="ml-4 flex shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setshowNotification(false);
+                      }}
+                      className="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                      <span className="sr-only">Close</span>
+                      <XMarkIcon aria-hidden="true" className="size-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Transition>
         </div>
       </div>
     </>
