@@ -21,8 +21,7 @@ import { sortByPrice } from "@/utils/helperFunctions";
 import { Transition } from "@headlessui/react";
 
 type orderbookData = {
-  id: number;
-  price: string;
+  price: number;
   quantity: number;
 };
 
@@ -142,8 +141,8 @@ export default function EventDetailsScreen() {
           });
         });
 
-        setNoData(noDataArr);
-        setYesData(yesDataArr);
+        setNoData(sortByPrice(noDataArr));
+        setYesData(sortByPrice(yesDataArr));
       } catch (e) {
         console.log("error:- ", e);
       }

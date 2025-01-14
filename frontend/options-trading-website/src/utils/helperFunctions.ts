@@ -101,7 +101,7 @@ export function deserializeOrderBookForEvent(json: any): any {
 }
 
 export function sortByPrice(
-  array: { id: number; price: string; quantity: number }[]
+  array: { price: number; quantity: number }[]
 ) {
   return array.sort((a, b) => Number(a.price) - Number(b.price));
 }
