@@ -26,7 +26,10 @@ type orderbookData = {
 };
 
 export default function EventDetailsScreen() {
-  const { eventId }: { eventId: string } = useParams();
+  const { eventId, ...res }: { eventId: string } = useParams();
+
+  // console.log("res check:- ", res);
+
   const [refetch, setRefetch] = useState(true);
 
   const userId = localStorage.getItem("userId");
@@ -117,6 +120,7 @@ export default function EventDetailsScreen() {
   useEffect(() => {
     async function getEventData() {
       try {
+        // console.log("event ID check:- ", eventId);
         const res = await fetch(`http://localhost:3000/orderbook/${eventId}`);
         const res2 = await res.json();
 
@@ -152,7 +156,7 @@ export default function EventDetailsScreen() {
     SignalingManager.getInstance().registerCallback(
       decodedEventId,
       (data: OrderType) => {
-        console.log("data check:-", data);
+        // console.log("data check:-", data);
         const orderbook = data;
         const yesArray = [];
         const noArray = [];

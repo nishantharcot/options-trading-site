@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import { ORDERBOOK, INR_BALANCES, STOCK_BALANCES } from "./data";
+import { ORDERBOOK, INR_BALANCES, STOCK_BALANCES, STOCK_END_TIMES } from "./data";
 import { MessageFromApi } from "./types/fromAPI";
 import { RedisManager } from "./RedisManager";
 import { serializeOrderBook, serializeOrderBookForEvent } from "./utils";
@@ -9,10 +9,17 @@ import { ORDER_QUEUES } from "./data";
 const redisClient = createClient();
 
 async function publishEvents({ stockSymbol }: { stockSymbol: string }) {
-  RedisManager.getInstance().publishMessage(stockSymbol, {
-    event: stockSymbol,
-    eventOrderbook: ORDERBOOK.get(stockSymbol)!,
-  });
+  if (ORDERBOOK.has(stockSymbol)) {
+    RedisManager.getInstance().publishMessage(stockSymbol, {
+      event: stockSymbol,
+      eventOrderbook: ORDERBOOK.get(stockSymbol)!,
+    });
+  } else {
+    RedisManager.getInstance().publishMessage(stockSymbol, {
+      event: stockSymbol,
+      eventOrderbook: {},
+    });
+  }
 }
 
 async function processSubmission({
@@ -27,7 +34,6 @@ async function processSubmission({
       try {
         const { userId } = request.data;
         if (!INR_BALANCES.has(userId)) {
-          console.log('yo nigga')
           INR_BALANCES.set(userId, { balance: 0, locked: 0 });
           STOCK_BALANCES.set(userId, new Map());
           RedisManager.getInstance().sendToApi(clientID, {
@@ -55,13 +61,14 @@ async function processSubmission({
       break;
     case "CREATE_SYMBOL":
       try {
-        const { stockSymbol } = request.data;
+        const { stockSymbol, endTime } = request.data;
         STOCK_BALANCES.forEach((userMap, userKey) => {
           userMap.set(stockSymbol, {
             yes: { quantity: 0, locked: 0 },
             no: { quantity: 0, locked: 0 },
           });
         });
+        STOCK_END_TIMES.set(stockSymbol, endTime);
         RedisManager.getInstance().sendToApi(clientID, {
           type: "SYMBOL_CREATED",
           payload: {
@@ -79,6 +86,7 @@ async function processSubmission({
       break;
     case "GET_ORDERBOOK":
       try {
+        // console.log('orderbook:- ', ORDERBOOK)
         RedisManager.getInstance().sendToApi(clientID, {
           type: "GET_ORDERBOOK",
           payload: {
@@ -163,6 +171,31 @@ async function processSubmission({
           type: "GET_INR_BALANCES",
           payload: {
             message: JSON.stringify(balancesObject),
+          },
+        });
+      } catch (e) {
+        RedisManager.getInstance().sendToApi(clientID, {
+          type: "REQUEST_FAILED",
+          payload: {
+            message: "Failed to fetch INR_BALANCES",
+          },
+        });
+      }
+      break;
+    case "GET_STOCK_END_TIMES":
+      try {
+        const stockEndTimes: any = {};
+
+        for (const [key, value] of STOCK_END_TIMES) {
+          stockEndTimes[key] = value;
+        }
+
+        // console.log('stockEndTimes:- ', stockEndTimes)
+
+        RedisManager.getInstance().sendToApi(clientID, {
+          type: "GET_STOCK_END_TIMES",
+          payload: {
+            message: JSON.stringify(stockEndTimes),
           },
         });
       } catch (e) {
@@ -263,10 +296,16 @@ async function processSubmission({
       try {
         let { userId, stockSymbol, quantity, price, stockType } = request.data;
 
+        stockSymbol = decodeURIComponent(stockSymbol);
+
+        console.log('price:- ', price);
+        console.log('quantity:- ', quantity);
+
         // STEP 1:- CHECK FOR SUFFICIENT BALANCE
         const stockCost = quantity * price;
 
         const userBalance = INR_BALANCES.get(userId)!;
+        console.log('user Balance: ', userBalance)
 
         if (userBalance.balance < stockCost) {
           RedisManager.getInstance().sendToApi(clientID, {
@@ -291,8 +330,12 @@ async function processSubmission({
             stockType: stockType,
           });
 
+          // console.log('before locked update: ', INR_BALANCES.get(userId)!.locked)
+
           INR_BALANCES.get(userId)!.balance -= stockCost;
           INR_BALANCES.get(userId)!.locked += stockCost;
+
+          // console.log('after locked update: ', INR_BALANCES.get(userId)!.locked)
 
           RedisManager.getInstance().sendToApi(clientID, {
             type: "BUY",
@@ -338,7 +381,7 @@ async function processSubmission({
 
           STOCK_BALANCES.get(sellerUserId)!.get(stockSymbol)![
             stockType
-          ].locked! -= toBeExecuted;
+          ]!.locked! -= toBeExecuted;
 
           const priceKey = (sellerPrice / 100).toString();
           ORDERBOOK.get(stockSymbol)![stockType]![priceKey].total -=
@@ -352,20 +395,22 @@ async function processSubmission({
             prevQuantity - toBeExecuted
           );
 
+          console.log('seller price:- ', sellerPrice)
+
           // BUYER details update
           INR_BALANCES.get(userId)!.balance -= toBeExecuted * sellerPrice;
           if (STOCK_BALANCES.has(userId)) {
             const userData = STOCK_BALANCES.get(userId)!;
             if (userData.has(stockSymbol)) {
-              userData.get(stockSymbol)![stockType].quantity += toBeExecuted;
+              userData.get(stockSymbol)![stockType]!.quantity += toBeExecuted;
             } else {
               userData.set(stockSymbol, {
                 yes: { quantity: 0, locked: 0 },
                 no: { quantity: 0, locked: 0 },
               });
-              userData.get(stockSymbol)![stockType].quantity += toBeExecuted;
+              userData.get(stockSymbol)![stockType]!.quantity += toBeExecuted;
             }
-            STOCK_BALANCES.get(userId)!.get(stockSymbol)![stockType].quantity +=
+            STOCK_BALANCES.get(userId)!.get(stockSymbol)![stockType]!.quantity +=
               toBeExecuted;
           } else {
             STOCK_BALANCES.set(userId, new Map());
@@ -375,7 +420,7 @@ async function processSubmission({
               yes: { quantity: 0, locked: 0 },
               no: { quantity: 0, locked: 0 },
             });
-            userData.get(stockSymbol)![stockType].quantity += toBeExecuted;
+            userData.get(stockSymbol)![stockType]!.quantity += toBeExecuted;
           }
 
           quantity -= toBeExecuted;
@@ -446,6 +491,13 @@ async function processSubmission({
       try {
         let { userId, stockSymbol, quantity, price, stockType } = request.data;
 
+        stockSymbol = decodeURIComponent(stockSymbol);
+
+        // console.log('user:- ', userId)
+        // console.log('quantity:- ', quantity)
+        // console.log('stock symbol:- ', stockSymbol);
+        // console.log('stock exists:- ', STOCK_BALANCES.get(userId)?.get(stockSymbol));
+
         const origQuantity = quantity;
 
         // STEP 1:- CHECK IF USER HAS SUFFICIENT STOCK BALANCE
@@ -512,24 +564,31 @@ async function processSubmission({
 
           // buyer details update
           INR_BALANCES.get(buyerUserId)!.locked -= toBeExecuted * buyerPrice;
-          STOCK_BALANCES.get(buyerUserId)!.get(stockSymbol)![
-            stockType
-          ].locked! -= toBeExecuted;
+          
+          const temp1 = STOCK_BALANCES.get(buyerUserId)
+
+          if (temp1 && temp1.get(stockSymbol) && temp1.get(stockSymbol)![stockType]) {
+            if (temp1.get(stockSymbol)![stockType]?.locked) {
+              temp1.get(stockSymbol)![stockType]!.locked -= toBeExecuted;
+            }
+          }
+
+          
 
           // BUYER details update
           INR_BALANCES.get(userId)!.balance -= toBeExecuted * buyerPrice;
           if (STOCK_BALANCES.has(userId)) {
             const userData = STOCK_BALANCES.get(userId)!;
             if (userData.has(stockSymbol)) {
-              userData.get(stockSymbol)![stockType].quantity += toBeExecuted;
+              userData.get(stockSymbol)![stockType]!.quantity += toBeExecuted;
             } else {
               userData.set(stockSymbol, {
                 yes: { quantity: 0, locked: 0 },
                 no: { quantity: 0, locked: 0 },
               });
-              userData.get(stockSymbol)![stockType].quantity += toBeExecuted;
+              userData.get(stockSymbol)![stockType]!.quantity += toBeExecuted;
             }
-            STOCK_BALANCES.get(userId)!.get(stockSymbol)![stockType].quantity +=
+            STOCK_BALANCES.get(userId)!.get(stockSymbol)![stockType]!.quantity +=
               toBeExecuted;
           } else {
             STOCK_BALANCES.set(userId, new Map());
@@ -539,7 +598,12 @@ async function processSubmission({
               yes: { quantity: 0, locked: 0 },
               no: { quantity: 0, locked: 0 },
             });
-            userData.get(stockSymbol)![stockType].quantity += toBeExecuted;
+            const data = userData.get(stockSymbol)
+
+            if (data && data[stockType]) {
+              data[stockType].quantity += toBeExecuted;
+            }
+
           }
 
           quantity -= toBeExecuted;
@@ -673,12 +737,16 @@ async function processSubmission({
       break;
     case "MINT":
       try {
-        const { userId, stockSymbol, quantity, price } = request.data;
+        let { userId, stockSymbol, quantity, price } = request.data;
+        stockSymbol = decodeURIComponent(stockSymbol);
         const reqdBalance = 2 * quantity * price;
+
+        // console.log('stockSymbol check:- ', stockSymbol);
 
         const userBalance = INR_BALANCES.get(userId)!.balance;
 
         if (userBalance < reqdBalance) {
+          console.log('qeikvbqkefqnebovqbvikqnvqolvbqeikvk')
           RedisManager.getInstance().sendToApi(clientID, {
             type: "MINT",
             payload: {
@@ -704,7 +772,7 @@ async function processSubmission({
           const noExists = stockBalanceData?.get(stockSymbol)?.no;
 
           if (yesExists) {
-            stockBalanceData.get(stockSymbol)!.yes.quantity += quantity;
+            stockBalanceData.get(stockSymbol)!.yes!.quantity += quantity;
           } else {
             stockBalanceData.get(stockSymbol)!["yes"] = {
               locked: 0,
@@ -713,16 +781,30 @@ async function processSubmission({
           }
 
           if (noExists) {
-            stockBalanceData.get(stockSymbol)!.no.quantity += quantity;
+            stockBalanceData.get(stockSymbol)!.no!.quantity += quantity;
           } else {
             stockBalanceData.get(stockSymbol)!["no"] = {
               locked: 0,
               quantity: quantity,
             };
           }
-        }
+        } 
+        // else {
+        //   stockBalanceData.set(stockSymbol, {
+        //     yes: {
+        //       quantity: 0,
+        //       locked: 0
+        //     },
+        //     no: {
+        //       quantity: 0,
+        //       locked: 0
+        //     }
+        //   })
+        // }
 
         const remainingBalacnce = INR_BALANCES.get(userId)!.balance;
+
+        // console.log(`stock balance for ${stockSymbol} `, userId, STOCK_BALANCES.get(userId)?.get(stockSymbol));
 
         RedisManager.getInstance().sendToApi(clientID, {
           type: "MINT",
@@ -750,11 +832,140 @@ async function processSubmission({
   // redisClient.lPush("db_server", serializeOrderBook(ORDERBOOK));
 }
 
+const handleEventEnd = (event: string) => {
+
+  // console.log('Before INR Balances: ', INR_BALANCES);
+  // console.log('Before STOCK Balances: ', STOCK_BALANCES);
+  // console.log('Before Orderbook: ', ORDERBOOK);
+
+
+  const eventOrderbook = ORDERBOOK.get(event);
+
+  const choices = ["yes", "no"];
+
+  const winner = choices[Math.floor(Math.random()*2)];
+
+  // console.log('orderbook check for event:', eventOrderbook);
+
+  if (!eventOrderbook || !eventOrderbook.yes || !eventOrderbook.no) {
+    return;
+  }
+
+  const yesBook = eventOrderbook.yes;
+  const noBook = eventOrderbook.no;
+
+  // console.log('yes book:- ', yesBook);
+  // console.log('no book:- ', noBook);
+
+  for (const [price, orderDetails] of Object.entries(yesBook)) {
+    // console.log('price: ', price);
+    // console.log('value: ', orderDetails);
+
+    for (const [userId, quantity] of orderDetails.orders) {
+      // console.log('userId:- ', userId);
+      // console.log('quantity:- ', quantity);
+
+      let currentBalance = INR_BALANCES.get(userId)!.balance;
+      let locked = INR_BALANCES.get(userId)!.locked;
+
+      currentBalance += Number(price)*quantity*100;
+      locked -= Number(price)*quantity*100
+
+      INR_BALANCES.set(userId, {balance: currentBalance, locked: locked});
+    }
+  }
+
+  for (const [price, orderDetails] of Object.entries(noBook)) {
+    // console.log('price: ', price);
+    // console.log('value: ', orderDetails);
+
+    for (const [userId, quantity] of orderDetails.orders) {
+      // console.log('userId:- ', userId);
+      // console.log('quantity:- ', quantity);
+
+      let currentBalance = INR_BALANCES.get(userId)!.balance;
+      let locked = INR_BALANCES.get(userId)!.locked;
+
+      currentBalance += Number(price)*quantity*100;
+      locked -= Number(price)*quantity*100
+
+      INR_BALANCES.set(userId, {balance: currentBalance, locked: locked});
+    }
+  }
+
+  ORDERBOOK.delete(event);
+
+  // console.log('stock balances checker: ', STOCK_BALANCES);
+  // console.log('stock balances length chcker:- ', Object.entries(STOCK_BALANCES).length);
+
+  for (const [user, eventObject] of STOCK_BALANCES) {
+    // console.log('user: ', user);
+    // console.log('eventObject: ', eventObject);
+
+    if (eventObject.has(event)) {
+      // console.log('checkingggg: ', eventObject.get(event))
+      
+      const res = eventObject.get(event);
+
+      if ((winner === "yes" && res?.yes) || (winner === "no" && res?.no)) {
+        let currentBalance = INR_BALANCES.get(user)!.balance;
+        let locked = INR_BALANCES.get(user)!.locked;
+        currentBalance += res[winner]!.quantity*10*100;
+        INR_BALANCES.set(user, {balance: currentBalance, locked: locked})
+      }
+    }
+  }
+
+  for (const user of STOCK_BALANCES) {
+    // console.log('user: ', user);
+
+    if (user[1].has(event)) {
+      user[1].delete(event);
+    }
+  }
+
+  // for (const user of STOCK_BALANCES) {
+  //   console.log('user: ', user);
+  // }
+
+  // console.log('inr balances: ', INR_BALANCES);
+
+  // console.log('After INR Balances: ', INR_BALANCES);
+  // console.log('After STOCK Balances: ', STOCK_BALANCES);
+  // console.log('After Orderbook: ', ORDERBOOK);
+
+  publishEvents({stockSymbol: event})
+
+};
+
+const checkForEndedEvents = () => {
+  const now = new Date();
+
+  const toBeDeleted = []
+
+  for (const [event, endTime] of STOCK_END_TIMES) {
+    const e = new Date(endTime).getTime();
+    const n = now.getTime();
+
+    if (e <= n) {
+      console.log(`Event ${event} ended`);
+      handleEventEnd(event);
+      toBeDeleted.push(event);
+    }
+  }
+
+  for (let i = 0; i < toBeDeleted.length; i++) {
+    STOCK_END_TIMES.delete(toBeDeleted[i]);
+  }
+};
+
 async function main() {
   try {
     await redisClient.connect();
 
     console.log("Engine connected, listening to requests");
+
+    setInterval(checkForEndedEvents, 1000);
 
     while (true) {
       const response = await redisClient.brPop("requests", 0);

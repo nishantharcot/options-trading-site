@@ -11,6 +11,7 @@ export type MessageFromApi =
       type: "CREATE_SYMBOL";
       data: {
         stockSymbol: string;
+        endTime: Date;
       };
     }
   | {
@@ -26,6 +27,8 @@ export type MessageFromApi =
       type: "GET_INR_BALANCES";
     }
   | {
+    type: "GET_STOCK_END_TIMES";
+  } | {
       type: "GET_STOCK_BALANCES";
     }
   | {

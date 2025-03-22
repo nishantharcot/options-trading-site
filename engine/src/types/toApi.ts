@@ -42,6 +42,11 @@ export type MessageToApi =
       };
     }
   | {
+    type: "GET_STOCK_END_TIMES",
+    payload: {
+      message: string
+    }
+  } | {
       type: "RESET_DATA";
       payload: {
         message: string;

@@ -12,6 +12,14 @@ export const getOrderBook = async (
   res.json(JSON.parse(response.payload.message));
 };
 
+export const getStockEndTimes = async (req: express.Request, res: express.Response) => {
+  const response = await RedisManager.getInstance().sendAndAwait({
+    type: "GET_STOCK_END_TIMES",
+  });
+
+  res.json(JSON.parse(response.payload.message));
+}
+
 export const getOrderBookForEvent = async (
   req: express.Request,
   res: express.Response

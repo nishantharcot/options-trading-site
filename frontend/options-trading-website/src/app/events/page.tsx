@@ -3,56 +3,128 @@
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { SignalingManager } from "@/utils/SignalingManager";
 
 type EventDetails = {
   event: string;
   yesPrice: number;
   noPrice: number;
+  endTime: Date;
+  timeLeft: string;
 };
 
 export default function EventsScreen() {
   const [events, setEvents] = useState<EventDetails[]>([]);
 
+  const [refetch, setRefetch] = useState(true);
+
   const router = useRouter();
 
+  // console.log("time left:- ", timeLeft);
+
   useEffect(() => {
-    fetch("http://localhost:3000/orderbook")
-      .then((res) => res.json())
-      .then((finalRes) => {
-        const events: EventDetails[] = [];
+    async function fetchData() {
+      const stockendTimesJson = await fetch(
+        "http://localhost:3000/stockendtimes"
+      );
 
-        if (!finalRes) {
-          return;
-        }
+      const stockEndTimeData = await stockendTimesJson.json();
+      // console.log("stockEndTimeData: ", stockEndTimeData);
 
-        finalRes.forEach((data: any) => {
-          console.log("data check:- ", data);
-          const eventName = data[0];
-          let yP = 10,
-            nP = 10;
+      const orderbookJson = await fetch("http://localhost:3000/orderbook");
+      const orderbookData = await orderbookJson.json();
 
-          if (data[1].hasOwnProperty("no") && data[1].hasOwnProperty("yes")) {
-            const noData = Object.entries(data[1].no);
-            noData.forEach((data) => {
-              nP = Math.min(nP, Number(data[0][0]));
-            });
+      if (!orderbookData) {
+        return;
+      }
 
-            const yesData = Object.entries(data[1].yes);
-            yesData.forEach((data) => {
-              yP = Math.min(yP, Number(data[0][0]));
-            });
+      let temp: EventDetails[] = [];
 
-            events.push({
+      orderbookData.forEach((data: any) => {
+        console.log("data check:- ", data);
+        const eventName = data[0];
+        let yP = 10,
+          nP = 0;
+
+        if (data[1].hasOwnProperty("no") && data[1].hasOwnProperty("yes")) {
+          const noData = Object.entries(data[1].no);
+
+          noData.forEach((noPoint) => {
+            // console.log("no point check:- ", noPoint[0]);
+            nP = Math.max(nP, Number(noPoint[0]));
+            // console.log("np check:- ", nP);
+          });
+
+          const yesData = Object.entries(data[1].yes);
+          yesData.forEach((yesPoint) => {
+            yP = Math.min(yP, Number(yesPoint[0]));
+          });
+
+          let res = "";
+          const diff =
+            new Date(stockEndTimeData[eventName]).getTime() -
+            new Date().getTime();
+          if (diff > 0) {
+            const minutes = Math.floor(diff / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            res = `${minutes}m ${seconds}s`;
+          }
+
+          if (res !== "") {
+            temp.push({
               event: eventName,
               yesPrice: yP,
               noPrice: nP,
+              endTime: stockEndTimeData[eventName],
+              timeLeft: res,
             });
           }
-        });
-
-        setEvents(events);
+        }
       });
-  }, []);
+      setEvents(temp);
+      console.log("temp check:- ", temp);
+      const interval = setInterval(() => {
+        setEvents((events) => {
+          return events.filter((data) => {
+            const diff =
+              new Date(data.endTime).getTime() - new Date().getTime();
+            if (diff > 0) {
+              const minutes = Math.floor(diff / (1000 * 60));
+              const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+              data.timeLeft = `${minutes}m ${seconds}s`;
+              return data;
+            }
+          });
+        });
+      }, 1000);
+
+      return () => clearInterval(interval); // Cleanup on unmount
+    }
+
+    fetchData();
+    setInterval(fetchData, 10 * 1000);
+  }, [refetch]);
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const updatedTimeLeft = events.map((data) => {
+  //       const diff = new Date(data.endTime).getTime() - new Date().getTime();
+  //       if (diff > 0) {
+  //         const minutes = Math.floor(diff / (1000 * 60));
+  //         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  //         return `${minutes}m ${seconds}s`;
+  //       } else {
+  //         setRefetch(!refetch);
+  //         return `${0}m ${0}s`;
+  //       }
+  //     });
+  //     // console.log("check time yo: ", updatedTimeLeft);
+  //     setTimeLeft(updatedTimeLeft);
+  //   }, 1000);
+
+  //   return () => clearInterval(interval); // Cleanup on unmount
+  // }, [events]);
 
   return (
     <>
@@ -63,17 +135,50 @@ export default function EventsScreen() {
             All events Predict and Win
           </h3>
         </div>
-        <div className="grid grid-cols-3 mt-12 gap-x-4">
+        <div className="grid grid-cols-1 gap-y-4 md:grid-cols-3 mt-12 gap-x-4">
           {events.map((data, index) => {
             return (
               <div
                 key={index}
                 className="overflow-hidden rounded-lg bg-white shadow"
-                onClick={() =>
-                  router.push("/events/" + encodeURIComponent(data.event))
-                }
+                onClick={() => {
+                  // if (timeLeft[index] === "Ended") {
+                  //   return;
+                  // }
+                  router.push("/events/" + encodeURIComponent(data.event));
+                }}
               >
+                <div className="flex justify-between p-4">
+                  <div className="flex">
+                    <Image
+                      src="/event-trader-count-logo.avif"
+                      alt="test"
+                      width={20}
+                      height={20}
+                    />
+                    <span className="flex flex-col self-end text-xs">
+                      2048 traders
+                    </span>
+                  </div>
+                  <div className="text-sm flex justify-end">
+                    {data.timeLeft}
+                  </div>
+                </div>
                 <div className="px-4 py-5 sm:p-6">{data.event}</div>
+                <div className="flex p-4 gap-x-3">
+                  <button
+                    type="button"
+                    className="w-full rounded bg-sky-50 px-2 py-1 text-sm font-semibold text-blue-600 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Yes ₹ {data.yesPrice}
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full rounded bg-red-50 px-2 py-1 text-sm font-semibold text-red-500 shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    No ₹ {data.noPrice}
+                  </button>
+                </div>
               </div>
             );
           })}

@@ -13,6 +13,7 @@ export type API_TO_ENGINE_ORDER_TYPES =
       type: "CREATE_SYMBOL";
       data: {
         stockSymbol: string;
+        endTime: Date;
       };
     }
   | {
@@ -26,6 +27,8 @@ export type API_TO_ENGINE_ORDER_TYPES =
     }
   | {
       type: "GET_INR_BALANCES";
+    } | {
+      type: "GET_STOCK_END_TIMES";
     }
   | {
       type: "GET_STOCK_BALANCES";

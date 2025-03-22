@@ -6,7 +6,11 @@ type UserBalance = {
 };
 
 type StockBalance = {
-  [key in "yes" | "no"]: {
+  yes?: {
+    quantity: number;
+    locked: number;
+  };
+  no?: {
     quantity: number;
     locked: number;
   };
@@ -39,6 +43,7 @@ export type OrderRequest = {
 export const INR_BALANCES: Map<string, UserBalance> = new Map();
 export const ORDERBOOK: OrderBook = new Map();
 export const STOCK_BALANCES: Map<string, Map<string, StockBalance>> = new Map();
+export const STOCK_END_TIMES: Map<string, Date> = new Map();
 
 type ORDER_QUEUES = {
   BUY_ORDER_QUEUE: OrderRequest[];

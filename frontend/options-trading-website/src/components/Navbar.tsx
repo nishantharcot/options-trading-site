@@ -33,8 +33,6 @@ export default function Navbar() {
   const { userBalance, setUserBalance }: UserBalanceContextType =
     useContext(UserBalanceContext);
 
-  console.log("userBalance:- ", userBalance);
-
   const [refetch, setRefetch] = useState(true);
 
   const [mintEventSelected, setmintEventSelected] = useState("");
