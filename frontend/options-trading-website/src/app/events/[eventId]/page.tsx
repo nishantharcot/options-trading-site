@@ -19,6 +19,8 @@ import { SignalingManager } from "@/utils/SignalingManager";
 import { OrderType } from "@/app/types";
 import { sortByPrice } from "@/utils/helperFunctions";
 import { Transition } from "@headlessui/react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type orderbookData = {
   price: number;
@@ -27,8 +29,13 @@ type orderbookData = {
 
 export default function EventDetailsScreen() {
   const { eventId, ...res }: { eventId: string } = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  console.log("eventId :- ", eventId);
+  const [endTime, setEndTime] = useState(searchParams.get("endTime"));
+  const [timeLeft, setTimeLeft] = useState("");
+
+  console.log("endTime: ", endTime);
 
   const [refetch, setRefetch] = useState(true);
 
@@ -52,6 +59,26 @@ export default function EventDetailsScreen() {
 
   const { setUserBalance }: UserBalanceContextType =
     useContext(UserBalanceContext);
+
+  useEffect(() => {
+    if (!endTime) {
+      return;
+    }
+    const interval = setInterval(() => {
+      const diff = new Date(endTime).getTime() - new Date().getTime();
+
+      if (diff > 0) {
+        const minutes = Math.floor(diff / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setTimeLeft(`${minutes}m ${seconds}s`);
+      } else {
+        setTimeLeft("Event ended");
+        router.push("/events");
+      }
+    }, 1000);
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [endTime]);
 
   useEffect(() => {
     if (userId) {
@@ -215,10 +242,11 @@ export default function EventDetailsScreen() {
     <>
       <Navbar />
       <div className="mx-auto mt-12 max-w-7xl px-4 sm:px-6 lg:px-8 text-gray-900">
-        <div className="border-b border-gray-200 pb-5">
+        <div className="flex justify-between border-b border-gray-200 pb-5">
           <h3 className="text-base font-semibold text-gray-900">
             {decodedEventId}
           </h3>
+          <div>Ends in {timeLeft}</div>
         </div>
         <div className="flex flex-col md:flex-row justify-between">
           <div>

@@ -122,10 +122,11 @@ export default function EventsScreen() {
                 key={index}
                 className="overflow-hidden rounded-lg bg-white shadow"
                 onClick={() => {
-                  // if (timeLeft[index] === "Ended") {
-                  //   return;
-                  // }
-                  router.push("/events/" + encodeURIComponent(data.event));
+                  router.push(
+                    "/events/" +
+                      encodeURIComponent(data.event) +
+                      `?endTime=${data.endTime}`
+                  );
                 }}
               >
                 <div className="flex justify-between p-4">
