@@ -12,10 +12,15 @@ export const createSymbol = async (
 
   console.log('endTime check:- ', endTime)
 
+  decodeURIComponent(stockSymbol);
+  
+  console.log('stockSymbol: ', stockSymbol);
+  console.log('decodeURIComponent stockSymbol: ', decodeURIComponent(stockSymbol));
+
   const response = await RedisManager.getInstance().sendAndAwait({
     type: "CREATE_SYMBOL",
     data: {
-      stockSymbol,
+      stockSymbol: decodeURIComponent(stockSymbol),
       endTime
     },
   });

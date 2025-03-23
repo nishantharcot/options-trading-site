@@ -1,12 +1,7 @@
 import { MarketMaker } from "./MarketMaker";
 
-
 function marketMakers() {
-
-
-
   function startMarket() {
-
     async function temp() {
       // Create users
       let res = await MarketMaker.getInstance().createUsers();
@@ -20,32 +15,14 @@ function marketMakers() {
       res = await MarketMaker.getInstance().initializeEventsAndMintTokens();
       console.log("initializeEventsAndMintTokens res check: ", res);
 
-      console.log('starting after initializeEventsAndMintTokens');
-      setInterval(MarketMaker.getInstance().placeOrderRandomly, 1000);
+      console.log("starting after initializeEventsAndMintTokens");
+      setInterval(MarketMaker.getInstance().placeOrderRandomly, 300);
     }
 
-
     temp();
-
-
   }
 
-
-
-
-  // function marketLoop() {
-  //   // Get latest event and create it
-
-  //   // Update user balances if reqd
-
-  //   // Minting tokens
-
-  //   // Place sell orders till the end time of event
-  // }
-
   startMarket();
-  // setInterval(marketLoop, 60*1000);
 }
-
 
 marketMakers();

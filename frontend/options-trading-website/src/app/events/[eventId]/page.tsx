@@ -28,12 +28,14 @@ type orderbookData = {
 export default function EventDetailsScreen() {
   const { eventId, ...res }: { eventId: string } = useParams();
 
-  // console.log("res check:- ", res);
+  console.log("eventId :- ", eventId);
 
   const [refetch, setRefetch] = useState(true);
 
   const userId = localStorage.getItem("userId");
   const decodedEventId = decodeURIComponent(eventId);
+
+  console.log("decodedEventId: ", decodedEventId);
 
   const [noData, setNoData] = useState<orderbookData[]>();
   const [yesData, setYesData] = useState<orderbookData[]>();
@@ -72,7 +74,7 @@ export default function EventDetailsScreen() {
         },
         body: JSON.stringify({
           userId: userId,
-          stockSymbol: decodedEventId,
+          stockSymbol: encodeURIComponent(decodedEventId),
           quantity: quantity,
           price: price * 100,
           stockType: stockType,
@@ -106,9 +108,9 @@ export default function EventDetailsScreen() {
 
   const [tabs, setTabs] = useState(initialTabs);
 
-  const handleTabClick = (clickedTabName) => {
+  const handleTabClick = (clickedTabName: string) => {
     // console.log("clickedTabName:- ", clickedTabName);
-    setStockType(clickedTabName);
+    setStockType(clickedTabName.toLowerCase());
     setTabs((prevTabs) =>
       prevTabs.map((tab) => ({
         ...tab,
@@ -153,15 +155,17 @@ export default function EventDetailsScreen() {
     }
     getEventData();
 
+    console.log("event: ", encodeURIComponent(eventId));
+
     SignalingManager.getInstance().registerCallback(
       decodedEventId,
       (data: OrderType) => {
-        // console.log("data check:-", data);
+        console.log("data check:-", data);
         const orderbook = data;
         const yesArray = [];
         const noArray = [];
 
-        // console.log(orderbook);
+        console.log(orderbook);
 
         for (const stockType of ["yes", "no"] as const) {
           if (!orderbook[stockType]) {
@@ -176,10 +180,10 @@ export default function EventDetailsScreen() {
               const total = orderDetails.total;
 
               if (stockType == "yes") {
-                yesArray.push({ id, price, quantity: total });
+                yesArray.push({ id, price: Number(price), quantity: total });
                 id++;
               } else {
-                noArray.push({ id, price, quantity: total });
+                noArray.push({ id, price: Number(price), quantity: total });
                 id++;
               }
             }
@@ -187,6 +191,7 @@ export default function EventDetailsScreen() {
         }
 
         setYesData(sortByPrice(yesArray));
+        setNoData(sortByPrice(noArray));
       }
     );
     SignalingManager.getInstance().sendMessage({
@@ -195,7 +200,7 @@ export default function EventDetailsScreen() {
     });
 
     return () => {
-      SignalingManager.getInstance().deRegisterCallback(eventId);
+      SignalingManager.getInstance().deRegisterCallback(decodedEventId);
       SignalingManager.getInstance().sendMessage({
         method: "UNSUBSCRIBE",
         params: [decodedEventId],

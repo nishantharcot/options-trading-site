@@ -29,6 +29,8 @@ export class User {
     this.ws.on("message", (message) => {
       const parsedMessage: IncomingMessage = JSON.parse(message.toString());
 
+      console.log('message check:- ', parsedMessage)
+
       if (parsedMessage.method === "SUBSCRIBE") {
         parsedMessage.params.forEach((s) =>
           SubscriptionManager.getInstance().subscribe(this.id, s)

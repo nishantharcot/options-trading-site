@@ -111,7 +111,7 @@ export class MarketMaker {
         console.log('deadline check:- ', deadline.getTime()-new Date().getTime())
         MarketMaker.getInstance().eventEndTimes.set(event, deadline);
 
-        console.log('event check:- ', event);
+        console.log('event check:- ', encodeURIComponent(event));
 
         return fetch(API_URL + `/symbol/create/${encodeURIComponent(event)}`, { method: "POST", headers: {
           "Content-Type": "application/json"
@@ -208,6 +208,7 @@ export class MarketMaker {
       const user = MarketMaker.getInstance().getRandomUser();
       const price = MarketMaker.getInstance().getRandomPrice();
       const quantity = 1 + Math.floor(Math.random()*10);
+      console.log('event:- ', (event));
   
       const res1Json = await fetch(API_URL + "/order/sell", {
         method: "POST",
@@ -215,7 +216,7 @@ export class MarketMaker {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          stockSymbol: event,
+          stockSymbol: encodeURIComponent(event),
           userId: user,
           quantity: quantity,
           price: price,
@@ -232,7 +233,7 @@ export class MarketMaker {
 
       // Stock balance insufficient
 
-      console.log('res1Data: ', res1Data)
+      // console.log('res1Data: ', res1Data)
   
       const res2Json = await fetch(API_URL + "/order/sell", {
         method: "POST",
@@ -240,7 +241,7 @@ export class MarketMaker {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          stockSymbol: event,
+          stockSymbol: encodeURIComponent(event),
           userId: user,
           quantity: quantity,
           price: 1000 - price,
@@ -250,7 +251,7 @@ export class MarketMaker {
 
       const res2Data = await res2Json.json();
 
-      console.log('res2Data: ', res1Data)
+      // console.log('res2Data: ', res1Data)
 
       if (res2Data.message.payload === "Insufficient INR balance") {
         MarketMaker.getInstance().addBalanceToUser(user);

@@ -42,7 +42,7 @@ export default function EventsScreen() {
       let temp: EventDetails[] = [];
 
       orderbookData.forEach((data: any) => {
-        console.log("data check:- ", data);
+        // console.log("data check:- ", data);
         const eventName = data[0];
         let yP = 10,
           nP = 0;
@@ -83,7 +83,7 @@ export default function EventsScreen() {
         }
       });
       setEvents(temp);
-      console.log("temp check:- ", temp);
+      // console.log("temp check:- ", temp);
       const interval = setInterval(() => {
         setEvents((events) => {
           return events.filter((data) => {
@@ -105,26 +105,6 @@ export default function EventsScreen() {
     fetchData();
     setInterval(fetchData, 10 * 1000);
   }, [refetch]);
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     const updatedTimeLeft = events.map((data) => {
-  //       const diff = new Date(data.endTime).getTime() - new Date().getTime();
-  //       if (diff > 0) {
-  //         const minutes = Math.floor(diff / (1000 * 60));
-  //         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-  //         return `${minutes}m ${seconds}s`;
-  //       } else {
-  //         setRefetch(!refetch);
-  //         return `${0}m ${0}s`;
-  //       }
-  //     });
-  //     // console.log("check time yo: ", updatedTimeLeft);
-  //     setTimeLeft(updatedTimeLeft);
-  //   }, 1000);
-
-  //   return () => clearInterval(interval); // Cleanup on unmount
-  // }, [events]);
 
   return (
     <>

@@ -21,6 +21,7 @@ export class SubscriptionManager {
   }
 
   public subscribe(userId: string, subscription: string) {
+    console.log('subscription: ', subscription);
 
     if (this.subscriptions.get(userId)?.includes(subscription)) {
       return;
@@ -36,11 +37,17 @@ export class SubscriptionManager {
     );
 
     if (this.reverseSubscriptions.get(subscription)?.length === 1) {
+      console.log('Subscribed!!!')
       this.redisClient.subscribe(subscription, this.redisCallbackhandler);
     }
   }
 
   private redisCallbackhandler = (message: any, channel: string) => {
+
+    console.log('redisCallbackhandler');
+    console.log('message:- ', message);
+    console.log('channel:- ', channel);
+
     this.reverseSubscriptions
       .get(channel)
       ?.forEach((s) => UserManager.getInstance().getUser(s)?.emit(message));

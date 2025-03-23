@@ -1,5 +1,7 @@
 import { OrderBook, OrderType } from "./data";
 import { OrderRequest } from "./data";
+import { BuyOrderDetails } from "./data";
+
 
 function entriesToObject(entries: [string, any][]): { [key: string]: any } {
   const obj: { [key: string]: any } = {};
@@ -83,7 +85,7 @@ export function serializeOrderBookForEvent(orderType: OrderType): string {
 }
 
 export function sortSellOrderQueueByPrice(
-  queue: OrderRequest[]
-): OrderRequest[] {
+  queue: BuyOrderDetails[]
+): BuyOrderDetails[] {
   return queue.sort((a, b) => a.price - b.price);
 }

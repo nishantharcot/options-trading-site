@@ -45,15 +45,27 @@ export const ORDERBOOK: OrderBook = new Map();
 export const STOCK_BALANCES: Map<string, Map<string, StockBalance>> = new Map();
 export const STOCK_END_TIMES: Map<string, Date> = new Map();
 
+// userId: userId,
+//             stockSymbol: stockSymbol,
+//             quantity: quantity,
+//             price: price,
+//             stockType: stockType,
+
+type StockType = "yes" | "no";
+
+export type BuyOrderDetails = {
+  userId: string;
+  quantity: number;
+  price: number;
+  stockType: StockType
+}
+
 type ORDER_QUEUES = {
-  BUY_ORDER_QUEUE: OrderRequest[];
-  SELL_ORDER_QUEUE: OrderRequest[];
+  BUY_ORDER_QUEUE: Map<string, BuyOrderDetails[]>;
+  SELL_ORDER_QUEUE: Map<string, BuyOrderDetails[]>;
 };
 
 export const ORDER_QUEUES: ORDER_QUEUES = {
-  BUY_ORDER_QUEUE: [],
-  SELL_ORDER_QUEUE: [],
+  BUY_ORDER_QUEUE: new Map(),
+  SELL_ORDER_QUEUE: new Map(),
 };
-
-export const BUY_ORDER_QUEUE: OrderRequest[] = [];
-export const SELL_ORDER_QUEUE: OrderRequest[] = [];

@@ -60,6 +60,9 @@ export class SignalingManager {
   }
 
   async registerCallback(event: string, callback: any) {
+
+    console.log('registerCallback:- ', event);
+
     this.callbacks[event] = this.callbacks[event] || [];
     this.callbacks[event].push({ callback, event });
   }
