@@ -1,4 +1,4 @@
-import { OrderBook, OrderType, StockBalance, UserBalance } from "./data";
+import { ORDER_QUEUES, OrderBook, OrderType, StockBalance, UserBalance } from "./data";
 import { OrderRequest } from "./data";
 import { BuyOrderDetails } from "./data";
 
@@ -103,9 +103,37 @@ export function serializeStockBalances(stockBalances: Map<string, Map<string, St
   );
 }
 
-
 export function sortSellOrderQueueByPrice(
   queue: BuyOrderDetails[]
 ): BuyOrderDetails[] {
   return queue.sort((a, b) => a.price - b.price);
+}
+
+export function serializeOrderQueues(orderQueues: ORDER_QUEUES): string {
+  return JSON.stringify({
+    BUY_ORDER_QUEUE: Array.from(orderQueues.BUY_ORDER_QUEUE, ([stock, orders]) => [
+      stock,
+      orders.map(order => ({
+        userId: order.userId,
+        quantity: order.quantity,
+        price: order.price,
+        stockType: order.stockType,
+        timestamp: order.timestamp.toISOString(),
+      })),
+    ]),
+    SELL_ORDER_QUEUE: Array.from(orderQueues.SELL_ORDER_QUEUE, ([stock, orders]) => [
+      stock,
+      orders.map(order => ({
+        userId: order.userId,
+        quantity: order.quantity,
+        price: order.price,
+        stockType: order.stockType,
+        timestamp: order.timestamp.toISOString(),
+      })),
+    ]),
+  });
+}
+
+export function serializeStockEndTimes(stockEndTimes: Map<string, Date>): string {
+  return JSON.stringify(Array.from(stockEndTimes.entries()));
 }

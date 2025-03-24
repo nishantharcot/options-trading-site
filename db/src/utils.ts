@@ -46,6 +46,21 @@ export type UserBalance = {
   locked: number;
 };
 
+type StockType = "yes" | "no";
+
+export type BuyOrderDetails = {
+  userId: string;
+  quantity: number;
+  price: number;
+  stockType: StockType;
+  timestamp: Date;
+}
+
+export type ORDER_QUEUES = {
+  BUY_ORDER_QUEUE: Map<string, BuyOrderDetails[]>;
+  SELL_ORDER_QUEUE: Map<string, BuyOrderDetails[]>;
+};
+
 export type OrderBook = Map<string, OrderType>;
 
 export function deserializeOrderBook(json: string): OrderBook {
@@ -158,5 +173,78 @@ export function stockBalancesToMongoose(stockBalances: Map<string, Map<string, S
   return Array.from(stockBalances, ([userId, stocks]) => ({
     userId,
     stocks: Object.fromEntries(stocks),
+  }));
+}
+
+export function deserializeOrderQueues(data: string): ORDER_QUEUES {
+  const parsed = JSON.parse(data);
+
+  return {
+    BUY_ORDER_QUEUE: new Map(
+      parsed.BUY_ORDER_QUEUE.map(([stock, orders]: [string, any[]]) => [
+        stock,
+        orders.map(order => ({
+          userId: order.userId,
+          quantity: order.quantity,
+          price: order.price,
+          stockType: order.stockType,
+          timestamp: new Date(order.timestamp),
+        })),
+      ])
+    ),
+    SELL_ORDER_QUEUE: new Map(
+      parsed.SELL_ORDER_QUEUE.map(([stock, orders]: [string, any[]]) => [
+        stock,
+        orders.map(order => ({
+          userId: order.userId,
+          quantity: order.quantity,
+          price: order.price,
+          stockType: order.stockType,
+          timestamp: new Date(order.timestamp),
+        })),
+      ])
+    ),
+  };
+}
+
+export function orderQueuesToMongoose(orderQueues: ORDER_QUEUES) {
+  return {
+    BUY_ORDER_QUEUE: Object.fromEntries(
+      Array.from(orderQueues.BUY_ORDER_QUEUE, ([stock, orders]) => [
+        stock,
+        orders.map(order => ({
+          userId: order.userId,
+          quantity: order.quantity,
+          price: order.price,
+          stockType: order.stockType,
+          timestamp: order.timestamp,
+        })),
+      ])
+    ),
+    SELL_ORDER_QUEUE: Object.fromEntries(
+      Array.from(orderQueues.SELL_ORDER_QUEUE, ([stock, orders]) => [
+        stock,
+        orders.map(order => ({
+          userId: order.userId,
+          quantity: order.quantity,
+          price: order.price,
+          stockType: order.stockType,
+          timestamp: order.timestamp,
+        })),
+      ])
+    ),
+  };
+}
+
+export function deserializeStockEndTimes(stockEndTimes: string): Map<string, Date> {
+  return new Map<string, Date>(
+    JSON.parse(stockEndTimes).map(([key, value]: [string, string]) => [key, new Date(value)])
+  );
+}
+
+export function stockEndTimesToMongoose(stockEndTimes: Map<string, Date>) {
+  return Array.from(stockEndTimes, ([stockId, endTime]) => ({
+    stockId,
+    endTime,
   }));
 }

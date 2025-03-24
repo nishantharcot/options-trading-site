@@ -10,11 +10,18 @@ import {
   deserializeStockBalances,
   StockBalance,
   stockBalancesToMongoose,
+  deserializeOrderQueues,
+  ORDER_QUEUES,
+  orderQueuesToMongoose,
+  deserializeStockEndTimes,
+  stockEndTimesToMongoose,
 } from "./utils";
 import { OrderBook } from "./utils";
 import { OrderBookModel } from "./schema/orderbook";
 import { InrBalancesModel } from "./schema/inrbalances";
 import { StockBalancesModel } from "./schema/stockbalances";
+import { OrderQueuesModel } from "./schema/orderqueues";
+import { StockEndTimeModel } from "./schema/stockendtimes";
 dotenv.config();
 
 let Orderbookflag = 1;
@@ -69,12 +76,50 @@ async function saveStockBalancesToDb(
 
   const res = stockBalancesToMongoose(stock_balances);
 
-  console.log("res check:- ", res);
+  // console.log("res check:- ", res);
 
   await StockBalancesModel.deleteMany({});
   await StockBalancesModel.insertMany(res);
 
   console.log("Stock Balances replaced successfully");
+}
+
+let orderQueuesFlag = 1;
+async function saveOrderQueuesToDb(order_queues: ORDER_QUEUES) {
+  if (orderQueuesFlag == 0) {
+    return;
+  }
+
+  if (orderQueuesFlag == 1) {
+    orderQueuesFlag = 0;
+  }
+
+  const res = orderQueuesToMongoose(order_queues);
+
+  console.log("res check:- ", res);
+
+  await OrderQueuesModel.deleteMany({});
+  await OrderQueuesModel.insertMany(res);
+
+  console.log("Order queues replaced successfully");
+}
+
+let stock_endtimes_flag = 1;
+async function saveStockEndTimesToDb(stock_endtimes: Map<string, Date>) {
+  if (stock_endtimes_flag == 0) {
+    return;
+  }
+
+  if (stock_endtimes_flag == 1) {
+    stock_endtimes_flag = 0;
+  }
+
+  const res = stockEndTimesToMongoose(stock_endtimes);
+
+  await StockEndTimeModel.deleteMany({});
+  await StockEndTimeModel.insertMany(res);
+
+  console.log("Stock endtimes replaced successfully");
 }
 
 async function main() {
@@ -98,6 +143,18 @@ async function main() {
       0
     );
 
+    const responseOrderQueues = await redisClient.brPop(
+      "db_server:order_queues",
+      0
+    );
+
+    const responseStockEndTimes = await redisClient.brPop(
+      "db_server:stock_endtimes",
+      0
+    );
+
+    // db_server:order_queues
+
     if (responseOrderBook?.element) {
       const res = deserializeOrderBook(responseOrderBook.element);
 
@@ -116,6 +173,18 @@ async function main() {
       const res = deserializeStockBalances(responseStockBalances.element);
 
       saveStockBalancesToDb(res);
+    }
+
+    if (responseOrderQueues?.element) {
+      const res = deserializeOrderQueues(responseOrderQueues.element);
+
+      saveOrderQueuesToDb(res);
+    }
+
+    if (responseStockEndTimes?.element) {
+      const res = deserializeStockEndTimes(responseStockEndTimes.element);
+
+      saveStockEndTimesToDb(res);
     }
   }
 }

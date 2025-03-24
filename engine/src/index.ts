@@ -7,7 +7,7 @@ import {
 } from "./data";
 import { MessageFromApi } from "./types/fromAPI";
 import { RedisManager } from "./RedisManager";
-import { serializeOrderBook, serializeOrderBookForEvent, serializeStockBalances, serializeUserBalances } from "./utils";
+import { serializeOrderBook, serializeOrderBookForEvent, serializeOrderQueues, serializeStockBalances, serializeStockEndTimes, serializeUserBalances } from "./utils";
 import { sortSellOrderQueueByPrice } from "./utils";
 import { ORDER_QUEUES } from "./data";
 
@@ -342,6 +342,7 @@ async function processSubmission({
               quantity: quantity,
               price: price,
               stockType: stockType,
+              timestamp:  new Date(Date.now())
             });
           } else {
             ORDER_QUEUES.BUY_ORDER_QUEUE.set(stockSymbol, [
@@ -350,6 +351,7 @@ async function processSubmission({
                 quantity: quantity,
                 price: price,
                 stockType: stockType,
+                timestamp:  new Date(Date.now())
               },
             ]);
           }
@@ -482,6 +484,7 @@ async function processSubmission({
               quantity: sellerQuantity,
               price: sellerPrice,
               stockType: sellerStockType,
+              timestamp:  new Date(Date.now())
             };
           }
 
@@ -653,6 +656,7 @@ async function processSubmission({
                 quantity,
                 price,
                 stockType,
+                timestamp:  new Date(Date.now())
               });
             } else {
               ORDER_QUEUES.SELL_ORDER_QUEUE.set(stockSymbol, [
@@ -661,6 +665,7 @@ async function processSubmission({
                   quantity,
                   price,
                   stockType,
+                  timestamp:  new Date(Date.now())
                 },
               ]);
             }
@@ -860,6 +865,7 @@ async function processSubmission({
               quantity,
               price,
               stockType,
+              timestamp:  new Date(Date.now())
             });
           } else {
             ORDER_QUEUES.SELL_ORDER_QUEUE.set(stockSymbol, [
@@ -868,6 +874,7 @@ async function processSubmission({
                 quantity,
                 price,
                 stockType,
+                timestamp:  new Date(Date.now())
               },
             ]);
           }
@@ -1012,6 +1019,8 @@ async function processSubmission({
   redisClient.lPush("db_server:orderbook", serializeOrderBook(ORDERBOOK));
   redisClient.lPush("db_server:inr_balances", serializeUserBalances(INR_BALANCES));
   redisClient.lPush("db_server:stock_balances", serializeStockBalances(STOCK_BALANCES));
+  redisClient.lPush("db_server:order_queues", serializeOrderQueues(ORDER_QUEUES));
+  redisClient.lPush("db_server:stock_endtimes", serializeStockEndTimes(STOCK_END_TIMES));
 }
 
 const handleEventEnd = (event: string) => {
@@ -1125,7 +1134,9 @@ async function main() {
     while (true) {
       const response = await redisClient.brPop("requests", 0);
 
-      await processSubmission(JSON.parse(response.element));
+      if (response) {
+        await processSubmission(JSON.parse(response.element));
+      }
     }
   } catch (e) {
     console.log("Engine server failed to start:- ", e);
