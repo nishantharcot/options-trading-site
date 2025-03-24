@@ -1,4 +1,4 @@
-import { OrderType } from "../data";
+import { OrderType } from "./data";
 
 export type OrderBookForEvent = {
   event: string;
