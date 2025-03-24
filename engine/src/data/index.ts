@@ -1,11 +1,11 @@
 import { STOCK_TYPE } from "../types/fromAPI";
 
-type UserBalance = {
+export type UserBalance = {
   balance: number;
   locked: number;
 };
 
-type StockBalance = {
+export type StockBalance = {
   yes?: {
     quantity: number;
     locked: number;

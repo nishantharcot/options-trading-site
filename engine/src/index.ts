@@ -7,7 +7,7 @@ import {
 } from "./data";
 import { MessageFromApi } from "./types/fromAPI";
 import { RedisManager } from "./RedisManager";
-import { serializeOrderBook, serializeOrderBookForEvent } from "./utils";
+import { serializeOrderBook, serializeOrderBookForEvent, serializeStockBalances, serializeUserBalances } from "./utils";
 import { sortSellOrderQueueByPrice } from "./utils";
 import { ORDER_QUEUES } from "./data";
 
@@ -1009,7 +1009,9 @@ async function processSubmission({
 
   // Send it back to queue for websocket server to pick it up
   // redisClient.lPush("ws_server", serializeOrderBook(ORDERBOOK));
-  // redisClient.lPush("db_server", serializeOrderBook(ORDERBOOK));
+  redisClient.lPush("db_server:orderbook", serializeOrderBook(ORDERBOOK));
+  redisClient.lPush("db_server:inr_balances", serializeUserBalances(INR_BALANCES));
+  redisClient.lPush("db_server:stock_balances", serializeStockBalances(STOCK_BALANCES));
 }
 
 const handleEventEnd = (event: string) => {
@@ -1061,6 +1063,7 @@ const handleEventEnd = (event: string) => {
       const res = eventObject.get(event);
 
       if ((winner === "yes" && res?.yes) || (winner === "no" && res?.no)) {
+        console.log('coming here!!!')
         let currentBalance = INR_BALANCES.get(user)!.balance;
         let locked = INR_BALANCES.get(user)!.locked;
         currentBalance += res[winner]!.quantity * 10 * 100;

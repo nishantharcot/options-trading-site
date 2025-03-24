@@ -137,7 +137,7 @@ export default function EventsScreen() {
                       width={20}
                       height={20}
                     />
-                    <span className="flex flex-col self-end text-xs">
+                    <span className="flex flex-col pl-1 self-end text-xs">
                       2048 traders
                     </span>
                   </div>

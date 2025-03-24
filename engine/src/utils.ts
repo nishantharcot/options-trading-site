@@ -1,4 +1,4 @@
-import { OrderBook, OrderType } from "./data";
+import { OrderBook, OrderType, StockBalance, UserBalance } from "./data";
 import { OrderRequest } from "./data";
 import { BuyOrderDetails } from "./data";
 
@@ -83,6 +83,26 @@ export function serializeOrderBookForEvent(orderType: OrderType): string {
     ])
   );
 }
+
+export function serializeUserBalances(inrBalances: Map<string, UserBalance>): string {
+  return JSON.stringify(Array.from(inrBalances.entries()));
+}
+
+export function serializeStockBalances(stockBalances: Map<string, Map<string, StockBalance>>): string {
+  return JSON.stringify(
+    Array.from(stockBalances, ([userId, stocks]) => [
+      userId,
+      Array.from(stocks, ([stockId, balance]) => [
+        stockId,
+        {
+          yes: balance.yes ? { ...balance.yes } : undefined,
+          no: balance.no ? { ...balance.no } : undefined,
+        },
+      ]),
+    ])
+  );
+}
+
 
 export function sortSellOrderQueueByPrice(
   queue: BuyOrderDetails[]
