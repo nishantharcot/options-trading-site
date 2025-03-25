@@ -22,104 +22,64 @@ import { InrBalancesModel } from "./schema/inrbalances";
 import { StockBalancesModel } from "./schema/stockbalances";
 import { OrderQueuesModel } from "./schema/orderqueues";
 import { StockEndTimeModel } from "./schema/stockendtimes";
+import fs from "fs";
+
 dotenv.config();
 
-let Orderbookflag = 1;
-let InrBalancesflag = 1;
+const STATE = {
+  ORDERBOOK: [] as any[],
+  INR_BALANCES: [] as any[],
+  STOCK_BALANCES: [] as any[],
+  ORDER_QUEUES: {} as any,
+  STOCK_END_TIMES: [] as any[],
+};
 
-async function saveOrderbookToDb(orderbook: OrderBook) {
-  if (Orderbookflag == 0) {
-    return;
-  }
-
-  if (Orderbookflag == 1) {
-    Orderbookflag = 0;
-  }
-
-  const res = orderBookToMongoose(orderbook);
-
+async function saveOrderbookToDb() {
   await OrderBookModel.deleteMany({});
 
-  await OrderBookModel.insertMany(res);
+  await OrderBookModel.insertMany(STATE.ORDERBOOK);
 
-  console.log("OrderBook replaced successfully!");
+  return "OrderBook replaced successfully!";
 }
 
-async function saveInrBalancesToDb(inr_balances: Map<string, UserBalance>) {
-  if (InrBalancesflag == 0) {
-    return;
-  }
-
-  if (InrBalancesflag == 1) {
-    InrBalancesflag = 0;
-  }
-
-  const res = inrBalancesToMongoose(inr_balances);
-
+async function saveInrBalancesToDb() {
   await InrBalancesModel.deleteMany({});
-  await InrBalancesModel.insertMany(res);
+  await InrBalancesModel.insertMany(STATE.INR_BALANCES);
 
-  console.log("INR Balances replaced successfully");
+  return "INR Balances replaced successfully";
 }
 
-let stockBalancesFlag = 1;
-async function saveStockBalancesToDb(
-  stock_balances: Map<string, Map<string, StockBalance>>
-) {
-  if (stockBalancesFlag == 0) {
-    return;
-  }
-
-  if (stockBalancesFlag == 1) {
-    stockBalancesFlag = 0;
-  }
-
-  const res = stockBalancesToMongoose(stock_balances);
-
-  // console.log("res check:- ", res);
-
+async function saveStockBalancesToDb() {
   await StockBalancesModel.deleteMany({});
-  await StockBalancesModel.insertMany(res);
+  await StockBalancesModel.insertMany(STATE.STOCK_BALANCES);
 
-  console.log("Stock Balances replaced successfully");
+  return "Stock Balances replaced successfully";
 }
 
-let orderQueuesFlag = 1;
-async function saveOrderQueuesToDb(order_queues: ORDER_QUEUES) {
-  if (orderQueuesFlag == 0) {
-    return;
-  }
-
-  if (orderQueuesFlag == 1) {
-    orderQueuesFlag = 0;
-  }
-
-  const res = orderQueuesToMongoose(order_queues);
-
-  console.log("res check:- ", res);
-
+async function saveOrderQueuesToDb() {
   await OrderQueuesModel.deleteMany({});
-  await OrderQueuesModel.insertMany(res);
+  await OrderQueuesModel.insertMany(STATE.ORDER_QUEUES);
 
-  console.log("Order queues replaced successfully");
+  return "Order queues replaced successfully";
 }
 
-let stock_endtimes_flag = 1;
-async function saveStockEndTimesToDb(stock_endtimes: Map<string, Date>) {
-  if (stock_endtimes_flag == 0) {
-    return;
-  }
-
-  if (stock_endtimes_flag == 1) {
-    stock_endtimes_flag = 0;
-  }
-
-  const res = stockEndTimesToMongoose(stock_endtimes);
-
+async function saveStockEndTimesToDb() {
   await StockEndTimeModel.deleteMany({});
-  await StockEndTimeModel.insertMany(res);
+  await StockEndTimeModel.insertMany(STATE.STOCK_END_TIMES);
 
-  console.log("Stock endtimes replaced successfully");
+  return "Stock endtimes replaced successfully";
+}
+
+async function saveToDb() {
+  const promises = await Promise.all([
+    saveOrderbookToDb(),
+    saveInrBalancesToDb(),
+    saveStockBalancesToDb(),
+    saveOrderQueuesToDb(),
+    saveStockEndTimesToDb(),
+  ]);
+
+  console.log(promises);
 }
 
 async function main() {
@@ -131,6 +91,8 @@ async function main() {
   await mongoose.connect(process.env.MONGO_URL || "");
 
   console.log("connected to DB");
+
+  setInterval(saveToDb, 60*1000);
 
   while (true) {
     const responseOrderBook = await redisClient.brPop("db_server:orderbook", 0);
@@ -153,38 +115,82 @@ async function main() {
       0
     );
 
-    // db_server:order_queues
-
     if (responseOrderBook?.element) {
+      fs.writeFile(
+        "order_book_snapshot.json",
+        responseOrderBook?.element,
+        (err) => {
+          if (err) console.error("Error writing snapshot:", err);
+        }
+      );
+
       const res = deserializeOrderBook(responseOrderBook.element);
 
-      // console.log('res check:- ', res);
+      STATE.ORDERBOOK = orderBookToMongoose(res);
 
-      saveOrderbookToDb(res);
+      // saveOrderbookToDb();
     }
 
     if (responseInrBalances?.element) {
+      fs.writeFile(
+        "inr_balances_snapshot.json",
+        responseInrBalances.element,
+        (err) => {
+          if (err) console.error("Error writing snapshot:", err);
+        }
+      );
+
       const res = deserializeInrBalances(responseInrBalances.element);
 
-      saveInrBalancesToDb(res);
+      STATE.INR_BALANCES = inrBalancesToMongoose(res);
     }
 
     if (responseStockBalances?.element) {
+      fs.writeFile(
+        "stock_balances_snapshot.json",
+        responseStockBalances.element,
+        (err) => {
+          if (err) console.error("Error writing snapshot:", err);
+        }
+      );
+
       const res = deserializeStockBalances(responseStockBalances.element);
 
-      saveStockBalancesToDb(res);
+      STATE.STOCK_BALANCES = stockBalancesToMongoose(res);
+
+      // saveStockBalancesToDb();
     }
 
     if (responseOrderQueues?.element) {
+      fs.writeFile(
+        "order_queues_snapshot.json",
+        responseOrderQueues.element,
+        (err) => {
+          if (err) console.error("Error writing snapshot:", err);
+        }
+      );
+
       const res = deserializeOrderQueues(responseOrderQueues.element);
 
-      saveOrderQueuesToDb(res);
+      STATE.ORDER_QUEUES = orderQueuesToMongoose(res);
+
+      // saveOrderQueuesToDb();
     }
 
     if (responseStockEndTimes?.element) {
+      fs.writeFile(
+        "stock_endtimes_snapshot.json",
+        responseStockEndTimes.element,
+        (err) => {
+          if (err) console.error("Error writing snapshot:", err);
+        }
+      );
+
       const res = deserializeStockEndTimes(responseStockEndTimes.element);
 
-      saveStockEndTimesToDb(res);
+      STATE.STOCK_END_TIMES = stockEndTimesToMongoose(res);
+
+      // saveStockEndTimesToDb();
     }
   }
 }

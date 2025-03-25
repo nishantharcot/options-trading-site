@@ -24,9 +24,9 @@ export class RedisManager {
   }
 
   public publishMessage(event: string, message: OrderBookForEvent) {
-    console.log('publishMessage');
-    console.log('event:- ', event);
-    console.log('message:- ', message);
+    // console.log('publishMessage');
+    // console.log('event:- ', event);
+    // console.log('message:- ', message);
 
     this.client.publish(event, JSON.stringify(message));
   }

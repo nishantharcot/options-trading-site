@@ -23,6 +23,7 @@ export type OrderPrice = {
   [price: string]: OrderDetails;
 };
 
+
 export type OrderType = {
   yes?: OrderPrice;
   no?: OrderPrice;

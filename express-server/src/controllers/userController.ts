@@ -14,8 +14,6 @@ export const createUser = async (
     },
   });
 
-  console.log("response check in express server:- ", response);
-
   res.json(response.payload);
 };
 

@@ -1,4 +1,4 @@
-import { OrderType, OrderBook, StockBalance, UserBalance, BuyOrderDetails, OrderQueues } from "./types/data";
+import { OrderType, OrderBook, StockBalance, UserBalance, BuyOrderDetails, OrderQueues, OrderPrice, OrderDetails } from "./types/data";
 
 
 function entriesToObject(entries: [string, any][]): { [key: string]: any } {
@@ -136,96 +136,229 @@ export function sortSellOrderQueueByPrice(
   return queue.sort((a, b) => a.price - b.price);
 }
 
-export function deserializeUserBalances(serializedData: string): Map<string, UserBalance> {
-  return new Map(
-    JSON.parse(serializedData).map(([userId, balance]: [string, UserBalance]) => [
-      userId,
-      { balance: balance.balance, locked: balance.locked },
-    ])
-  );
+export function deserializeUserBalances(data: any[]): Map<string, UserBalance> {
+  const inrBalances = new Map<string, UserBalance>();
+
+  if (!Array.isArray(data)) return inrBalances; // Handle cases where data isn't an array
+
+  data.forEach((item) => {
+    if (item.userId && typeof item.balance === "number" && typeof item.locked === "number") {
+      inrBalances.set(item.userId, { balance: item.balance, locked: item.locked });
+    }
+  });
+
+  return inrBalances;
 }
 
-export function deserializeStockBalances(serializedData: string): Map<string, Map<string, StockBalance>> {
-  return new Map(
-    JSON.parse(serializedData).map(([userId, stocks]: [string, [string, StockBalance][]]) => [
-      userId,
-      new Map(
-        stocks.map(([stockId, balance]) => [
-          stockId,
-          {
-            yes: balance.yes ? { quantity: balance.yes.quantity, locked: balance.yes.locked } : undefined,
-            no: balance.no ? { quantity: balance.no.quantity, locked: balance.no.locked } : undefined,
-          },
-        ])
-      ),
-    ])
-  );
+// export function deserializeOrderBook(serializedData: string): OrderBook {
+//   return new Map(
+//     JSON.parse(serializedData).map(([key, orderType]: [string, any]) => [
+//       key,
+//       {
+//         yes: orderType.yes
+//           ? Object.fromEntries(
+//               Object.entries(orderType.yes).map(([price, orderDetails]: [string, any]) => [
+//                 price,
+//                 {
+//                   total: orderDetails.total,
+//                   orders: new Map(orderDetails.orders),
+//                 },
+//               ])
+//             )
+//           : undefined,
+//         no: orderType.no
+//           ? Object.fromEntries(
+//               Object.entries(orderType.no).map(([price, orderDetails]: [string, any]) => [
+//                 price,
+//                 {
+//                   total: orderDetails.total,
+//                   orders: new Map(orderDetails.orders),
+//                 },
+//               ])
+//             )
+//           : undefined,
+//       },
+//     ])
+//   );
+// }
+
+// export function deserializeOrderBook(data: any[]): OrderBook {
+//   const orderBook = new Map<string, OrderType>();
+
+//   if (!Array.isArray(data)) return orderBook;
+
+//   data.forEach(([stockId, orderType]) => {
+//     if (typeof stockId === "string" && typeof orderType === "object") {
+//       orderBook.set(stockId, {
+//         yes: orderType.yes
+//           ? Object.fromEntries(
+//               Object.entries(orderType.yes).map(([price, orderDetails]) => {
+//                 const details = orderDetails as { total: number; orders: Record<string, number> };
+//                 return [
+//                   price,
+//                   {
+//                     total: details.total,
+//                     orders: new Map(Object.entries(details.orders)), // Keep orders as Map
+//                   },
+//                 ];
+//               })
+//             )
+//           : undefined,
+//         no: orderType.no
+//           ? Object.fromEntries(
+//               Object.entries(orderType.no).map(([price, orderDetails]) => {
+//                 const details = orderDetails as { total: number; orders: Record<string, number> };
+//                 return [
+//                   price,
+//                   {
+//                     total: details.total,
+//                     orders: new Map(Object.entries(details.orders)), // Keep orders as Map
+//                   },
+//                 ];
+//               })
+//             )
+//           : undefined,
+//       });
+//     }
+//   });
+
+//   return orderBook;
+// }
+
+export function deserializeOrderBook(data: any): OrderBook {
+  const orderBook = new Map<string, OrderType>();
+
+  if (!Array.isArray(data)) {
+    console.error("deserializeOrderBook: data is not an array", data);
+    return orderBook;
+  }
+
+  data.forEach((entry) => {
+    if (typeof entry !== "object" || entry === null) {
+      console.error("deserializeOrderBook: Invalid entry format", entry);
+      return;
+    }
+
+    const { eventId, orderBook: orderData } = entry;
+
+    if (typeof eventId !== "string" || typeof orderData !== "object" || orderData === null) {
+      console.error("deserializeOrderBook: Invalid eventId or orderData", { eventId, orderData });
+      return;
+    }
+
+    const processOrderPrice = (orderPrice: any): OrderPrice | undefined => {
+      if (typeof orderPrice !== "object" || orderPrice === null) return undefined;
+
+      return Object.fromEntries(
+        Object.entries(orderPrice).map(([price, orderDetails]) => {
+          price = price.replace("_", ".");
+          if (typeof orderDetails !== "object" || orderDetails === null) {
+            console.error("deserializeOrderBook: Invalid orderDetails", { price, orderDetails });
+            return [price, { total: 0, orders: new Map() }];
+          }
+
+          const details = orderDetails as { total: number; orders: Record<string, number> };
+          return [
+            price,
+            {
+              total: details.total,
+              orders: new Map(Object.entries(details.orders)),
+            },
+          ];
+        })
+      );
+    };
+
+    orderBook.set(eventId, {
+      yes: processOrderPrice(orderData.yes),
+      no: processOrderPrice(orderData.no),
+    });
+  });
+
+  return orderBook;
 }
 
-export function deserializeOrderQueues(serializedData: string): OrderQueues {
-  const parsedData = JSON.parse(serializedData);
-  return {
-    BUY_ORDER_QUEUE: new Map(
-      parsedData.BUY_ORDER_QUEUE.map(([stock, orders]: [string, BuyOrderDetails[]]) => [
-        stock,
-        orders.map(order => ({
-          userId: order.userId,
-          quantity: order.quantity,
-          price: order.price,
-          stockType: order.stockType,
-          timestamp: new Date(order.timestamp),
-        })),
-      ])
-    ),
-    SELL_ORDER_QUEUE: new Map(
-      parsedData.SELL_ORDER_QUEUE.map(([stock, orders]: [string, BuyOrderDetails[]]) => [
-        stock,
-        orders.map(order => ({
-          userId: order.userId,
-          quantity: order.quantity,
-          price: order.price,
-          stockType: order.stockType,
-          timestamp: new Date(order.timestamp),
-        })),
-      ])
-    ),
+export function deserializeStockBalances(data: any[]): Map<string, Map<string, StockBalance>> {
+  const stockBalances = new Map<string, Map<string, StockBalance>>();
+
+  if (!Array.isArray(data)) return stockBalances;
+
+  data.forEach(({ userId, stocks }) => {
+    if (typeof userId === "string" && typeof stocks === "object") {
+      const userStocks = new Map<string, StockBalance>();
+      
+      Object.entries(stocks).forEach(([stockSymbol, stockData]) => {
+        const stockDetails = stockData as { yes?: { quantity: number; locked: number }; no?: { quantity: number; locked: number } };
+        userStocks.set(stockSymbol, {
+          yes: stockDetails.yes ? { quantity: stockDetails.yes.quantity, locked: stockDetails.yes.locked } : undefined,
+          no: stockDetails.no ? { quantity: stockDetails.no.quantity, locked: stockDetails.no.locked } : undefined,
+        });
+      });
+      
+      stockBalances.set(userId, userStocks);
+    }
+  });
+
+  return stockBalances;
+}
+
+export function deserializeStockEndTimes(data: any[]): Map<string, Date> {
+  const stockEndTimes = new Map<string, Date>();
+
+  if (!Array.isArray(data)) return stockEndTimes;
+
+  data.forEach(({ stockId, endTime }) => {
+    if (typeof stockId === "string" && endTime) {
+      stockEndTimes.set(stockId, new Date(endTime));
+    }
+  });
+
+  return stockEndTimes;
+}
+
+export function deserializeOrderQueues(data: any[]): OrderQueues {
+  const orderQueues: OrderQueues = {
+    BUY_ORDER_QUEUE: new Map<string, BuyOrderDetails[]>(),
+    SELL_ORDER_QUEUE: new Map<string, BuyOrderDetails[]>(),
   };
-}
 
-export function deserializeStockEndTimes(serializedData: string): Map<string, Date> {
-  return new Map(
-    JSON.parse(serializedData).map(([stock, timestamp]: [string, string]) => [stock, new Date(timestamp)])
-  );
-}
+  if (!Array.isArray(data)) return orderQueues;
 
-export function deserializeOrderBook(serializedData: string): OrderBook {
-  return new Map(
-    JSON.parse(serializedData).map(([key, orderType]: [string, any]) => [
-      key,
-      {
-        yes: orderType.yes
-          ? Object.fromEntries(
-              Object.entries(orderType.yes).map(([price, orderDetails]: [string, any]) => [
-                price,
-                {
-                  total: orderDetails.total,
-                  orders: new Map(orderDetails.orders),
-                },
-              ])
-            )
-          : undefined,
-        no: orderType.no
-          ? Object.fromEntries(
-              Object.entries(orderType.no).map(([price, orderDetails]: [string, any]) => [
-                price,
-                {
-                  total: orderDetails.total,
-                  orders: new Map(orderDetails.orders),
-                },
-              ])
-            )
-          : undefined,
-      },
-    ])
-  );
+  data.forEach(({ BUY_ORDER_QUEUE, SELL_ORDER_QUEUE }) => {
+    if (BUY_ORDER_QUEUE && typeof BUY_ORDER_QUEUE === "object") {
+      Object.entries(BUY_ORDER_QUEUE).forEach(([stockId, orders]) => {
+        if (Array.isArray(orders)) {
+          orderQueues.BUY_ORDER_QUEUE.set(
+            stockId,
+            orders.map(order => ({
+              userId: order.userId,
+              quantity: order.quantity,
+              price: order.price,
+              stockType: order.stockType,
+              timestamp: new Date(order.timestamp),
+            }))
+          );
+        }
+      });
+    }
+
+    if (SELL_ORDER_QUEUE && typeof SELL_ORDER_QUEUE === "object") {
+      Object.entries(SELL_ORDER_QUEUE).forEach(([stockId, orders]) => {
+        if (Array.isArray(orders)) {
+          orderQueues.SELL_ORDER_QUEUE.set(
+            stockId,
+            orders.map(order => ({
+              userId: order.userId,
+              quantity: order.quantity,
+              price: order.price,
+              stockType: order.stockType,
+              timestamp: new Date(order.timestamp),
+            }))
+          );
+        }
+      });
+    }
+  });
+
+  return orderQueues;
 }

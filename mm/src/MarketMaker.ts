@@ -104,10 +104,10 @@ export class MarketMaker {
 
     const temp = async () => {
       // Initialize events
-      let c = 1;
+      let c = 2;
       const eventPromises = MarketMaker.getInstance().eventList.map(event => {
         const deadline = new Date(Date.now() + c*60*1000);
-        c++;
+        c+=2;
         console.log('deadline check:- ', deadline.getTime()-new Date().getTime())
         MarketMaker.getInstance().eventEndTimes.set(event, deadline);
 
@@ -200,7 +200,9 @@ export class MarketMaker {
     // console.log('eventEndTimes:- ', MarketMaker.getInstance().eventEndTimes)
 
     if (Date.now() >= MarketMaker.getInstance().eventEndTimes.get(event)!.getTime()) {
-      MarketMaker.getInstance().createEventAndMintTokens(event);
+      setTimeout(() => {
+        MarketMaker.getInstance().createEventAndMintTokens(event);
+      }, 1000)
       return;
     }
 
