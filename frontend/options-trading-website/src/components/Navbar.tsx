@@ -79,6 +79,9 @@ export default function Navbar() {
         });
 
         setEvents(events);
+        if (events.length) {
+          setmintEventSelected(events[0].event);
+        }
       });
   }, []);
 

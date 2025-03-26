@@ -941,8 +941,6 @@ async function processSubmission({
         stockSymbol = decodeURIComponent(stockSymbol);
         const reqdBalance = 2 * quantity * price;
 
-        // console.log('stockSymbol check:- ', stockSymbol);
-
         const userBalance = INR_BALANCES.get(userId)!.balance;
 
         if (userBalance < reqdBalance) {
@@ -988,6 +986,8 @@ async function processSubmission({
               quantity: quantity,
             };
           }
+        } else {
+          stockBalanceData.set(stockSymbol, {yes: {quantity: quantity, locked: 0}, no: {quantity: quantity, locked: 0}})
         }
 
         const remainingBalacnce = INR_BALANCES.get(userId)!.balance;

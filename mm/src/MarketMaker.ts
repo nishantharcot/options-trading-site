@@ -53,11 +53,15 @@ export class MarketMaker {
           })
         });
       })
-
-      const onrampJson = await Promise.all(onrampPromises);
-      const onrampData = await Promise.all(onrampJson.map(data => data.json()));
-
-      return onrampData;
+      try {
+        const onrampJson = await Promise.all(onrampPromises);
+        const onrampData = await Promise.all(onrampJson.map(data => data.json()));
+  
+        return onrampData;
+      } catch(e) {
+        console.error(e);
+        return ["Req Failed"];
+      }
     }
 
     return temp();
