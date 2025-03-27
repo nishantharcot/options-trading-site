@@ -2,16 +2,17 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useContext, useState } from "react";
 import { XCircleIcon } from "@heroicons/react/20/solid";
 import { API_URL } from "@/utils/constants";
+import { UserContext, UserContextType } from "@/context/UserContext";
 
 export default function LandingScreen() {
   const router = useRouter();
 
-  console.log("API_URL:- ", API_URL);
+  const [isError] = useState(false);
 
-  const [isError, setIsError] = useState(false);
+  const { setUserId }: UserContextType = useContext(UserContext);
 
   const userIdSubmission = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,15 +21,17 @@ export default function LandingScreen() {
     const formData = new FormData(form);
     const userId = formData.get("text")?.toString();
 
-    console.log("User Id:", userId);
-    console.log("API_URL: ", API_URL);
-
     fetch(`${API_URL}/user/create/${userId}`, {
       method: "POST",
     })
       .then((res) => res.json())
-      .then((finalRes) => {
-        localStorage.setItem("userId", userId || "");
+      .then(() => {
+        if (userId) {
+          if (typeof window !== "undefined") {
+            localStorage.setItem("userId", userId);
+            setUserId(userId);
+          }
+        }
         router.push("/events");
       });
   };

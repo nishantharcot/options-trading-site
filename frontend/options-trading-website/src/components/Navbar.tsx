@@ -1,5 +1,8 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import Image from "next/image";
 
 import {
@@ -15,10 +18,7 @@ import { CurrencyRupeeIcon } from "@heroicons/react/20/solid";
 import { FormEvent, useContext, useEffect, useState } from "react";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import {
-  UserBalanceContextType,
-  UserBalanceContext,
-} from "@/context/UserBalanceContext";
+import { UserContext, UserContextType } from "@/context/UserContext";
 import { API_URL } from "@/utils/constants";
 
 type EventDetails = {
@@ -31,8 +31,8 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [eventOpen, setEventOpen] = useState(false);
   const [mintTokensOpen, setmintTokensOpen] = useState(false);
-  const { userBalance, setUserBalance }: UserBalanceContextType =
-    useContext(UserBalanceContext);
+  const { userId, setUserId, userBalance, setUserBalance }: UserContextType =
+    useContext(UserContext);
 
   const [refetch, setRefetch] = useState(true);
 
@@ -41,7 +41,6 @@ export default function Navbar() {
   const [mintPrice, setmintPrice] = useState<number>(3.5);
   const [mintNumberOfTokens, setmintNumberOfTokens] = useState<number>();
 
-  const userId = localStorage.getItem("userId");
   const [events, setEvents] = useState<EventDetails[]>([]);
 
   useEffect(() => {
@@ -86,9 +85,18 @@ export default function Navbar() {
       });
   }, []);
 
+  useEffect(() => {
+    if (userId) {
+      return;
+    }
+
+    if (typeof window !== "undefined" && localStorage.getItem("userId")) {
+      setUserId(localStorage.getItem("userId"));
+    }
+  }, [userId]);
+
   const handleNumberOfTokens = (e: React.ChangeEvent<HTMLInputElement>) => {
     setmintNumberOfTokens(Number(e.target.value));
-    console.log("mintNumberOfTokens:- ", mintNumberOfTokens);
   };
 
   const addFundClick = () => {
@@ -100,8 +108,6 @@ export default function Navbar() {
   };
 
   const mintTokens = async () => {
-    console.log("mintEventSelected:- ", mintEventSelected);
-
     const tempRes = await fetch(`${API_URL}/trade/mint`, {
       method: "POST",
       headers: {
@@ -145,8 +151,6 @@ export default function Navbar() {
           setRefetch(!refetch);
         });
     }
-
-    console.log("amount:- ", amount);
   };
 
   const createEventClick = () => {

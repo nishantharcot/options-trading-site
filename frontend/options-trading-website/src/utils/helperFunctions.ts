@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 function entriesToObject(entries: [string, any][]): { [key: string]: any } {
   const obj: { [key: string]: any } = {};
   entries.forEach(([key, value]) => {

@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -17,18 +19,13 @@ type EventDetails = {
 export default function EventsScreen() {
   const [events, setEvents] = useState<EventDetails[]>([]);
 
-  const [refetch, setRefetch] = useState(true);
-
   const router = useRouter();
-
-  // console.log("time left:- ", timeLeft);
 
   useEffect(() => {
     async function fetchData() {
       const stockendTimesJson = await fetch(`${API_URL}/stockendtimes`);
 
       const stockEndTimeData = await stockendTimesJson.json();
-      // console.log("stockEndTimeData: ", stockEndTimeData);
 
       const orderbookJson = await fetch(`${API_URL}/orderbook`);
       const orderbookData = await orderbookJson.json();
@@ -37,10 +34,9 @@ export default function EventsScreen() {
         return;
       }
 
-      let temp: EventDetails[] = [];
+      const temp: EventDetails[] = [];
 
       orderbookData.forEach((data: any) => {
-        // console.log("data check:- ", data);
         const eventName = data[0];
         let yP = 10,
           nP = 0;
@@ -49,9 +45,7 @@ export default function EventsScreen() {
           const noData = Object.entries(data[1].no);
 
           noData.forEach((noPoint) => {
-            // console.log("no point check:- ", noPoint[0]);
             nP = Math.max(nP, Number(noPoint[0]));
-            // console.log("np check:- ", nP);
           });
 
           const yesData = Object.entries(data[1].yes);
@@ -81,7 +75,6 @@ export default function EventsScreen() {
         }
       });
       setEvents(temp);
-      // console.log("temp check:- ", temp);
       const interval = setInterval(() => {
         setEvents((events) => {
           return events.filter((data) => {
@@ -97,12 +90,12 @@ export default function EventsScreen() {
         });
       }, 1000);
 
-      return () => clearInterval(interval); // Cleanup on unmount
+      return () => clearInterval(interval);
     }
 
     fetchData();
     setInterval(fetchData, 10 * 1000);
-  }, [refetch]);
+  }, []);
 
   return (
     <>

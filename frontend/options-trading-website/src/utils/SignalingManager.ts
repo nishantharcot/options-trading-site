@@ -1,4 +1,6 @@
-import { WS_URL, API_URL } from "./constants";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { WS_URL } from "./constants";
 
 export class SignalingManager {
   private static instance: SignalingManager;
@@ -32,12 +34,10 @@ export class SignalingManager {
     };
 
     this.ws.onmessage = (event) => {
-      console.log("event check:- ", event);
-      console.log("callbacks check:- ", this.callbacks);
       const message = JSON.parse(event.data);
 
       if (this.callbacks[message.event]) {
-        this.callbacks[message.event].forEach(({ callback }) => {
+        this.callbacks[message.event].forEach(({ callback }: {callback: any}) => {
           console.log("message check:- ", message);
           const newOrderbook = message.eventOrderbook;
           callback(newOrderbook);
@@ -70,7 +70,7 @@ export class SignalingManager {
   async deRegisterCallback(event: string) {
     if (this.callbacks[event]) {
       const index = this.callbacks[event].findIndex(
-        (ele) => ele.event === event
+        (ele: any) => ele.event === event
       );
       if (index !== -1) {
         this.callbacks[event].splice(index, 1);

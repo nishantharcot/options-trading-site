@@ -1,5 +1,8 @@
 "use client";
 
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import Navbar from "@/components/Navbar";
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -11,10 +14,7 @@ import {
 } from "@heroicons/react/16/solid";
 import { MinusIcon } from "@heroicons/react/16/solid";
 import { PlusIcon } from "@heroicons/react/16/solid";
-import {
-  UserBalanceContextType,
-  UserBalanceContext,
-} from "@/context/UserBalanceContext";
+import { UserContext, UserContextType } from "@/context/UserContext";
 import { SignalingManager } from "@/utils/SignalingManager";
 import { OrderType } from "@/app/types";
 import { sortByPrice } from "@/utils/helperFunctions";
@@ -29,18 +29,18 @@ type orderbookData = {
 };
 
 export default function EventDetailsScreen() {
-  const { eventId, ...res }: { eventId: string } = useParams();
+  const { eventId }: { eventId: string } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [endTime, setEndTime] = useState(searchParams.get("endTime"));
+  const [endTime] = useState(searchParams.get("endTime"));
   const [timeLeft, setTimeLeft] = useState("");
 
   console.log("endTime: ", endTime);
 
   const [refetch, setRefetch] = useState(true);
 
-  const userId = localStorage.getItem("userId");
+  const { userId } = useContext(UserContext);
   const decodedEventId = decodeURIComponent(eventId);
 
   console.log("decodedEventId: ", decodedEventId);
@@ -58,8 +58,7 @@ export default function EventDetailsScreen() {
   const [notificationContent, setNotificationContent] = useState("");
   const [notificationSuccess, setnotificationSuccess] = useState(true);
 
-  const { setUserBalance }: UserBalanceContextType =
-    useContext(UserBalanceContext);
+  const { setUserBalance }: UserContextType = useContext(UserContext);
 
   useEffect(() => {
     if (!endTime) {
@@ -125,7 +124,7 @@ export default function EventDetailsScreen() {
     order();
   };
 
-  function classNames(...classes) {
+  function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(" ");
   }
 
@@ -150,25 +149,20 @@ export default function EventDetailsScreen() {
   useEffect(() => {
     async function getEventData() {
       try {
-        // console.log("event ID check:- ", eventId);
         const res = await fetch(`${API_URL}/orderbook/${eventId}`);
         const res2 = await res.json();
 
         const noDataArr: orderbookData[] = [];
         const yesDataArr: orderbookData[] = [];
 
-        Object.entries(res2[0].no).forEach((data) => {
-          // console.log("data check 0:- ", data[0]);
-          // console.log("data check 1:- ", data[1].total);
+        Object.entries(res2[0].no).forEach((data: any[]) => {
           noDataArr.push({
             price: Number(data[0]),
             quantity: Number(data[1].total),
           });
         });
 
-        Object.entries(res2[0].yes).forEach((data) => {
-          // console.log("data check 0:- ", data[0]);
-          // console.log("data check 1:- ", data[1].total);
+        Object.entries(res2[0].yes).forEach((data: any[]) => {
           yesDataArr.push({
             price: Number(data[0]),
             quantity: Number(data[1].total),
@@ -336,17 +330,22 @@ export default function EventDetailsScreen() {
                 {/* We use less vertical padding on card headers on desktop than on body sections */}
                 <div>
                   <div className="grid grid-cols-1 sm:hidden">
-                    {/* Use an "onChange" listener to redirect the user to the selected tab URL. */}
-                    <select
-                      defaultValue={tabs.find((tab) => tab.current).name}
-                      aria-label="Select a tab"
-                      onChange={(e) => handleTabClick(e.target.value)}
-                      className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-2 pl-3 pr-8 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
-                    >
-                      {tabs.map((tab) => (
-                        <option key={tab.name}>{tab.name}</option>
-                      ))}
-                    </select>
+                    {tabs && (
+                      <select
+                        defaultValue={
+                          tabs.find((tab) => tab.current)
+                            ? tabs.find((tab) => tab.current)?.name
+                            : ""
+                        }
+                        aria-label="Select a tab"
+                        onChange={(e) => handleTabClick(e.target.value)}
+                        className="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-2 pl-3 pr-8 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600"
+                      >
+                        {tabs.map((tab) => (
+                          <option key={tab.name}>{tab.name}</option>
+                        ))}
+                      </select>
+                    )}
                     <ChevronDownIcon
                       aria-hidden="true"
                       className="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end fill-gray-500"
