@@ -4,9 +4,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { XCircleIcon } from "@heroicons/react/20/solid";
+import { API_URL } from "@/utils/constants";
 
 export default function LandingScreen() {
   const router = useRouter();
+
+  console.log("API_URL:- ", API_URL);
 
   const [isError, setIsError] = useState(false);
 
@@ -18,8 +21,9 @@ export default function LandingScreen() {
     const userId = formData.get("text")?.toString();
 
     console.log("User Id:", userId);
+    console.log("API_URL: ", API_URL);
 
-    fetch(`http://localhost:3000/user/create/${userId}`, {
+    fetch(`${API_URL}/user/create/${userId}`, {
       method: "POST",
     })
       .then((res) => res.json())
@@ -89,7 +93,7 @@ export default function LandingScreen() {
                     type="submit"
                     className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     onClick={() => {
-                      // fetch("http://localhost:3000/user/create");
+                      // fetch("${API_URL}/user/create");
                       // router.push("/events");
                     }}
                   >

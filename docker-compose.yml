@@ -1,0 +1,83 @@
+services:
+  frontend:
+    image: frontend-optixchange
+    build:
+      context: ./frontend/options-trading-website
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8081
+    depends_on:
+      - express-server
+      - websocket-server
+
+  express-server:
+    image: express-server-optixchange
+    build:
+      context: ./express-server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+      - websocket-server
+      - engine-server
+
+  engine-server:
+    image: engine-server-optixchange
+    build:
+      context: ./engine
+      dockerfile: Dockerfile
+    environment:
+      - MONGO_URL=${MONGO_URL}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+
+  websocket-server:
+    image: ws-server-optixchange
+    build:
+      context: ./ws-server
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+
+  db-server:
+    image: db-server-optixchange
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGO_URL=${MONGO_URL}
+    depends_on:
+      - redis
+
+  mm-server:
+    image: mm-server-optixchange
+    build:
+      context: ./mm
+      dockerfile: Dockerfile
+    environment:
+      - API_URL=http://express-server:3000
+    depends_on:
+      - express-server
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"

@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000";
+const API_URL = process.env.API_URL
 
 export class MarketMaker {
   private eventList: string[];
@@ -112,10 +112,7 @@ export class MarketMaker {
       const eventPromises = MarketMaker.getInstance().eventList.map(event => {
         const deadline = new Date(Date.now() + c*60*1000);
         c+=2;
-        console.log('deadline check:- ', deadline.getTime()-new Date().getTime())
         MarketMaker.getInstance().eventEndTimes.set(event, deadline);
-
-        console.log('event check:- ', encodeURIComponent(event));
 
         return fetch(API_URL + `/symbol/create/${encodeURIComponent(event)}`, { method: "POST", headers: {
           "Content-Type": "application/json"
@@ -126,9 +123,6 @@ export class MarketMaker {
 
       const eventPromisesJson = await Promise.all(eventPromises);
       const eventPromisesData = await Promise.all(eventPromisesJson.map(data => data.json()));
-
-      console.log('eventPromisesData: ', eventPromisesData)
-
 
       const mintPromises: any[] = [];
   
@@ -153,9 +147,6 @@ export class MarketMaker {
   
       const mintPromisesJson = await Promise.all(mintPromises);
       const mintPromisesData = await Promise.all(mintPromisesJson.map(data => data.json()))
-
-      console.log('mintPromisesData length:- ', mintPromisesData.length)
-      console.log(mintPromisesData);
 
       return mintPromisesData;
     }
@@ -200,9 +191,6 @@ export class MarketMaker {
   public placeOrderRandomly() {
     const event = MarketMaker.getInstance().getRandomEvent();
 
-    // console.log('event: ', event)
-    // console.log('eventEndTimes:- ', MarketMaker.getInstance().eventEndTimes)
-
     if (Date.now() >= MarketMaker.getInstance().eventEndTimes.get(event)!.getTime()) {
       setTimeout(() => {
         MarketMaker.getInstance().createEventAndMintTokens(event);
@@ -214,7 +202,6 @@ export class MarketMaker {
       const user = MarketMaker.getInstance().getRandomUser();
       const price = MarketMaker.getInstance().getRandomPrice();
       const quantity = 1 + Math.floor(Math.random()*10);
-      console.log('event:- ', (event));
   
       const res1Json = await fetch(API_URL + "/order/sell", {
         method: "POST",
@@ -238,8 +225,6 @@ export class MarketMaker {
       }
 
       // Stock balance insufficient
-
-      // console.log('res1Data: ', res1Data)
   
       const res2Json = await fetch(API_URL + "/order/sell", {
         method: "POST",
@@ -256,8 +241,6 @@ export class MarketMaker {
       })
 
       const res2Data = await res2Json.json();
-
-      // console.log('res2Data: ', res1Data)
 
       if (res2Data.message.payload === "Insufficient INR balance") {
         MarketMaker.getInstance().addBalanceToUser(user);

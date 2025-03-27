@@ -7,7 +7,9 @@ export class RedisManager {
   private static instance: RedisManager;
 
   private constructor() {
-    this.client = createClient();
+    this.client = createClient({
+      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    })
     this.client.connect();
   }
 
@@ -24,10 +26,6 @@ export class RedisManager {
   }
 
   public publishMessage(event: string, message: OrderBookForEvent) {
-    // console.log('publishMessage');
-    // console.log('event:- ', event);
-    // console.log('message:- ', message);
-
     this.client.publish(event, JSON.stringify(message));
   }
 }

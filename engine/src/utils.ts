@@ -1,5 +1,4 @@
-import { OrderType, OrderBook, StockBalance, UserBalance, BuyOrderDetails, OrderQueues, OrderPrice, OrderDetails } from "./types/data";
-
+import { OrderType, OrderBook, StockBalance, UserBalance, BuyOrderDetails, OrderQueues, OrderPrice } from "./types/data";
 
 function entriesToObject(entries: [string, any][]): { [key: string]: any } {
   const obj: { [key: string]: any } = {};
@@ -149,81 +148,6 @@ export function deserializeUserBalances(data: any[]): Map<string, UserBalance> {
 
   return inrBalances;
 }
-
-// export function deserializeOrderBook(serializedData: string): OrderBook {
-//   return new Map(
-//     JSON.parse(serializedData).map(([key, orderType]: [string, any]) => [
-//       key,
-//       {
-//         yes: orderType.yes
-//           ? Object.fromEntries(
-//               Object.entries(orderType.yes).map(([price, orderDetails]: [string, any]) => [
-//                 price,
-//                 {
-//                   total: orderDetails.total,
-//                   orders: new Map(orderDetails.orders),
-//                 },
-//               ])
-//             )
-//           : undefined,
-//         no: orderType.no
-//           ? Object.fromEntries(
-//               Object.entries(orderType.no).map(([price, orderDetails]: [string, any]) => [
-//                 price,
-//                 {
-//                   total: orderDetails.total,
-//                   orders: new Map(orderDetails.orders),
-//                 },
-//               ])
-//             )
-//           : undefined,
-//       },
-//     ])
-//   );
-// }
-
-// export function deserializeOrderBook(data: any[]): OrderBook {
-//   const orderBook = new Map<string, OrderType>();
-
-//   if (!Array.isArray(data)) return orderBook;
-
-//   data.forEach(([stockId, orderType]) => {
-//     if (typeof stockId === "string" && typeof orderType === "object") {
-//       orderBook.set(stockId, {
-//         yes: orderType.yes
-//           ? Object.fromEntries(
-//               Object.entries(orderType.yes).map(([price, orderDetails]) => {
-//                 const details = orderDetails as { total: number; orders: Record<string, number> };
-//                 return [
-//                   price,
-//                   {
-//                     total: details.total,
-//                     orders: new Map(Object.entries(details.orders)), // Keep orders as Map
-//                   },
-//                 ];
-//               })
-//             )
-//           : undefined,
-//         no: orderType.no
-//           ? Object.fromEntries(
-//               Object.entries(orderType.no).map(([price, orderDetails]) => {
-//                 const details = orderDetails as { total: number; orders: Record<string, number> };
-//                 return [
-//                   price,
-//                   {
-//                     total: details.total,
-//                     orders: new Map(Object.entries(details.orders)), // Keep orders as Map
-//                   },
-//                 ];
-//               })
-//             )
-//           : undefined,
-//       });
-//     }
-//   });
-
-//   return orderBook;
-// }
 
 export function deserializeOrderBook(data: any): OrderBook {
   const orderBook = new Map<string, OrderType>();

@@ -93,6 +93,7 @@ export async function initData() {
         OrderQueuesModel.find().lean()
       ]);
 
+      console.log('data loaded from DB!')
     // console.log("orderQueuesData: ", orderQueuesData);
 
     if (inrBalancesData) {

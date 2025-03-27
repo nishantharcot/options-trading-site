@@ -1,4 +1,4 @@
-export const BASE_URL = "ws://localhost:8081";
+import { WS_URL, API_URL } from "./constants";
 
 export class SignalingManager {
   private static instance: SignalingManager;
@@ -9,7 +9,7 @@ export class SignalingManager {
   private callbacks: any = {};
 
   private constructor() {
-    this.ws = new WebSocket(BASE_URL);
+    this.ws = new WebSocket(WS_URL);
     this.id = 1;
     this.bufferedMessages = [];
     this.init();

@@ -19,6 +19,7 @@ import {
   UserBalanceContextType,
   UserBalanceContext,
 } from "@/context/UserBalanceContext";
+import { API_URL } from "@/utils/constants";
 
 type EventDetails = {
   event: string;
@@ -44,7 +45,7 @@ export default function Navbar() {
   const [events, setEvents] = useState<EventDetails[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:3000/orderbook")
+    fetch(`${API_URL}/orderbook`)
       .then((res) => res.json())
       .then((finalRes) => {
         const events: EventDetails[] = [];
@@ -101,7 +102,7 @@ export default function Navbar() {
   const mintTokens = async () => {
     console.log("mintEventSelected:- ", mintEventSelected);
 
-    const tempRes = await fetch("http://localhost:3000/trade/mint", {
+    const tempRes = await fetch(`${API_URL}/trade/mint`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -128,7 +129,7 @@ export default function Navbar() {
     const amount = Number(formData.get("text"));
 
     if (!Number.isNaN(amount)) {
-      fetch("http://localhost:3000/onramp/inr", {
+      fetch(`${API_URL}/onramp/inr`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -160,7 +161,7 @@ export default function Navbar() {
     const event = formData.get("text")?.toString();
 
     if (event) {
-      fetch(`http://localhost:3000/symbol/create/${event}`, { method: "POST" })
+      fetch(`${API_URL}/symbol/create/${event}`, { method: "POST" })
         .then((res) => res.json())
         .then((finalRes) => {
           console.log("event check:- ", finalRes);
@@ -170,7 +171,7 @@ export default function Navbar() {
 
   useEffect(() => {
     if (userId) {
-      fetch(`http://localhost:3000/balances/inr/${userId}`)
+      fetch(`${API_URL}/balances/inr/${userId}`)
         .then((res) => res.json())
         .then((finalRes) => {
           const paise = Number(finalRes.message);

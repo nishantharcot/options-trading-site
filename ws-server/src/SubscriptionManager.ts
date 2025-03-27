@@ -8,7 +8,9 @@ export class SubscriptionManager {
   private reverseSubscriptions: Map<string, string[]> = new Map();
 
   private constructor() {
-    this.redisClient = createClient();
+    this.redisClient = createClient({
+      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    });
     this.redisClient.connect();
   }
 

@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { SignalingManager } from "@/utils/SignalingManager";
+import { API_URL } from "@/utils/constants";
 
 type EventDetails = {
   event: string;
@@ -25,14 +25,12 @@ export default function EventsScreen() {
 
   useEffect(() => {
     async function fetchData() {
-      const stockendTimesJson = await fetch(
-        "http://localhost:3000/stockendtimes"
-      );
+      const stockendTimesJson = await fetch(`${API_URL}/stockendtimes`);
 
       const stockEndTimeData = await stockendTimesJson.json();
       // console.log("stockEndTimeData: ", stockEndTimeData);
 
-      const orderbookJson = await fetch("http://localhost:3000/orderbook");
+      const orderbookJson = await fetch(`${API_URL}/orderbook`);
       const orderbookData = await orderbookJson.json();
 
       if (!orderbookData) {

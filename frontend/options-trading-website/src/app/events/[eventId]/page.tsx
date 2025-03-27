@@ -21,6 +21,7 @@ import { sortByPrice } from "@/utils/helperFunctions";
 import { Transition } from "@headlessui/react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { API_URL } from "@/utils/constants";
 
 type orderbookData = {
   price: number;
@@ -82,7 +83,7 @@ export default function EventDetailsScreen() {
 
   useEffect(() => {
     if (userId) {
-      fetch(`http://localhost:3000/balances/inr/${userId}`)
+      fetch(`${API_URL}/balances/inr/${userId}`)
         .then((res) => res.json())
         .then((finalRes) => {
           const paise = Number(finalRes.message);
@@ -94,7 +95,7 @@ export default function EventDetailsScreen() {
 
   const placeOrder = () => {
     async function order() {
-      const res = await fetch(`http://localhost:3000/order/${orderType}`, {
+      const res = await fetch(`${API_URL}/order/${orderType}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -150,7 +151,7 @@ export default function EventDetailsScreen() {
     async function getEventData() {
       try {
         // console.log("event ID check:- ", eventId);
-        const res = await fetch(`http://localhost:3000/orderbook/${eventId}`);
+        const res = await fetch(`${API_URL}/orderbook/${eventId}`);
         const res2 = await res.json();
 
         const noDataArr: orderbookData[] = [];

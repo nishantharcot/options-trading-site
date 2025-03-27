@@ -19,7 +19,9 @@ import { sortSellOrderQueueByPrice } from "./utils";
 import { ORDER_QUEUES } from "./data";
 import { initData } from "./data";
 
-const redisClient = createClient();
+const redisClient = createClient({
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+})
 
 async function publishEvents({ stockSymbol }: { stockSymbol: string }) {
   if (ORDERBOOK.has(stockSymbol)) {
@@ -110,7 +112,7 @@ async function processSubmission({
       break;
     case "GET_ORDERBOOK":
       try {
-        // console.log('orderbook:- ', ORDERBOOK)
+
         RedisManager.getInstance().sendToApi(clientID, {
           type: "GET_ORDERBOOK",
           payload: {
@@ -213,8 +215,6 @@ async function processSubmission({
         for (const [key, value] of STOCK_END_TIMES) {
           stockEndTimes[key] = value;
         }
-
-        // console.log('stockEndTimes:- ', stockEndTimes)
 
         RedisManager.getInstance().sendToApi(clientID, {
           type: "GET_STOCK_END_TIMES",
@@ -320,18 +320,12 @@ async function processSubmission({
       try {
         let { userId, stockSymbol, quantity, price, stockType } = request.data;
 
-        // console.log('seller queue for this event:- ', ORDER_QUEUES.SELL_ORDER_QUEUE.get(stockSymbol));
-
         stockSymbol = decodeURIComponent(stockSymbol);
-
-        // console.log("price:- ", price);
-        // console.log("quantity:- ", quantity);
 
         // STEP 1:- CHECK FOR SUFFICIENT BALANCE
         const stockCost = quantity * price;
 
         const userBalance = INR_BALANCES.get(userId)!;
-        // console.log("user Balance: ", userBalance);
 
         if (userBalance.balance < stockCost) {
           RedisManager.getInstance().sendToApi(clientID, {
@@ -345,9 +339,6 @@ async function processSubmission({
 
         // STEP 2:- CHECK FOR STOCK IN ORDERBOOK
         const exists = ORDER_QUEUES.SELL_ORDER_QUEUE.has(stockSymbol);
-
-        // console.log('exists:- ', exists);
-        // console.log(ORDERBOOK.get(stockSymbol));
 
         if (!exists) {
           // UPDATE ORDERBOOK AND INR_BALANCES
@@ -375,12 +366,8 @@ async function processSubmission({
             ]);
           }
 
-          // console.log('before locked update: ', INR_BALANCES.get(userId)!.locked)
-
           INR_BALANCES.get(userId)!.balance -= stockCost;
           INR_BALANCES.get(userId)!.locked += stockCost;
-
-          // console.log('after locked update: ', INR_BALANCES.get(userId)!.locked)
 
           RedisManager.getInstance().sendToApi(clientID, {
             type: "BUY",
@@ -397,8 +384,6 @@ async function processSubmission({
         const origQuantity = quantity;
         const res = ORDER_QUEUES.SELL_ORDER_QUEUE.get(stockSymbol);
 
-        // console.log('res:- ', res)
-
         if (!res) {
           return;
         }
@@ -411,17 +396,9 @@ async function processSubmission({
             stockType: sellerStockType,
           } = res[i];
 
-          // console.log('stockType:- ', stockType);
-          // console.log('sellerStockType:- ', sellerStockType);
-
-          // console.log('price:- ', price);
-          // console.log('sellerPrice:- ', sellerPrice);
-
           if (sellerStockType !== stockType || sellerPrice > price) {
             continue;
           }
-
-          // console.log('yooyoy');
 
           let toBeExecuted = 0;
 
@@ -441,23 +418,21 @@ async function processSubmission({
           ]!.locked! -= toBeExecuted;
 
           const priceKey = (sellerPrice / 100).toString();
-          // console.log('prev: ', ORDERBOOK.get(stockSymbol)![stockType]![priceKey].total);
+
           ORDERBOOK.get(stockSymbol)![stockType]![priceKey].total -=
             toBeExecuted;
-          // console.log('after: ', ORDERBOOK.get(stockSymbol)![stockType]![priceKey].total);
+
           const prevQuantity =
             ORDERBOOK.get(stockSymbol)![stockType]![priceKey].orders.get(
               sellerUserId
             )!;
 
-          // console.log('prev check:- ', ORDERBOOK.get(stockSymbol)![stockType]![priceKey].orders);
+
           ORDERBOOK.get(stockSymbol)![stockType]![priceKey].orders.set(
             sellerUserId,
             prevQuantity - toBeExecuted
           );
-          // console.log('after check:- ', ORDERBOOK.get(stockSymbol)![stockType]![priceKey].orders);
 
-          // console.log("seller price:- ", sellerPrice);
 
           // BUYER details update
           INR_BALANCES.get(userId)!.balance -= toBeExecuted * sellerPrice;
@@ -554,16 +529,7 @@ async function processSubmission({
       try {
         let { userId, stockSymbol, quantity, price, stockType } = request.data;
 
-        // console.log('Sell order queue before ', stockSymbol, " ", ORDER_QUEUES.SELL_ORDER_QUEUE.get(stockSymbol));
-
         stockSymbol = decodeURIComponent(stockSymbol);
-
-        // console.log("SELL Order received!!!")
-
-        // console.log('user:- ', userId)
-        // console.log('quantity:- ', quantity)
-        // console.log('stock symbol:- ', stockSymbol);
-        // console.log('stock exists:- ', STOCK_BALANCES.get(userId)?.get(stockSymbol));
 
         const origQuantity = quantity;
 
@@ -578,8 +544,6 @@ async function processSubmission({
           });
           break;
         }
-
-        // console.log("SELL Order received part 2!!!")
 
         const stockTypeExists = stockExists[stockType];
         if (!stockTypeExists) {
@@ -789,8 +753,6 @@ async function processSubmission({
           }
         }
 
-        // console.log("SELL Order received part 3!!!")
-
         // Delete items
         const latest = ORDER_QUEUES.BUY_ORDER_QUEUE.get(stockSymbol)!.filter(
           (item, index) => {
@@ -803,8 +765,6 @@ async function processSubmission({
         );
 
         ORDER_QUEUES.BUY_ORDER_QUEUE.set(stockSymbol, latest);
-
-        // console.log('reach checkingggggggg')
 
         if (quantity > 0) {
           const priceKey = (price / 100).toString();
@@ -921,10 +881,9 @@ async function processSubmission({
             },
           });
         }
-        // console.log("publishEvents in SELL");
+
         publishEvents({ stockSymbol: stockSymbol });
 
-        // console.log('Sell order queue after ', stockSymbol, " ", ORDER_QUEUES.SELL_ORDER_QUEUE.get(stockSymbol));
       } catch (e) {
         RedisManager.getInstance().sendToApi(clientID, {
           type: "GET_USER_BALANCE",
@@ -944,7 +903,6 @@ async function processSubmission({
         const userBalance = INR_BALANCES.get(userId)!.balance;
 
         if (userBalance < reqdBalance) {
-          // console.log("qeikvbqkefqnebovqbvikqnvqolvbqeikvk");
           RedisManager.getInstance().sendToApi(clientID, {
             type: "MINT",
             payload: {
@@ -992,8 +950,6 @@ async function processSubmission({
 
         const remainingBalacnce = INR_BALANCES.get(userId)!.balance;
 
-        // console.log(`stock balance for ${stockSymbol} `, userId, STOCK_BALANCES.get(userId)?.get(stockSymbol));
-
         RedisManager.getInstance().sendToApi(clientID, {
           type: "MINT",
           payload: {
@@ -1017,8 +973,6 @@ async function processSubmission({
 
   // Send it back to queue for websocket server to pick it up
   // redisClient.lPush("ws_server", serializeOrderBook(ORDERBOOK));
-
-  // console.log("yoyo man!");
 
   redisClient.lPush("db_server:orderbook", serializeOrderBook(ORDERBOOK));
   redisClient.rPush(
@@ -1054,12 +1008,8 @@ const handleEventEnd = (event: string) => {
   ORDER_QUEUES.SELL_ORDER_QUEUE.delete(event);
   ORDER_QUEUES.BUY_ORDER_QUEUE.delete(event);
 
-  console.log('INR_BALANCES: ', INR_BALANCES);
-
   sellQueue?.map((data) => {
     const { userId, quantity, price, stockType } = data;
-
-    console.log('userId: ', userId);
 
     let currentBalance = INR_BALANCES.get(userId)!.balance;
     let locked = INR_BALANCES.get(userId)!.locked;
@@ -1068,8 +1018,6 @@ const handleEventEnd = (event: string) => {
     locked -= quantity * price;
     INR_BALANCES.set(userId, { balance: currentBalance, locked: locked });
   });
-
-  console.log('yoyo man!!')
 
   buyQueue?.map((data) => {
     const { userId, quantity, price, stockType } = data;
@@ -1084,35 +1032,16 @@ const handleEventEnd = (event: string) => {
 
   ORDERBOOK.delete(event);
 
-  console.log('yoyo man 2!!')
-
   for (const [user, eventObject] of STOCK_BALANCES) {
-    console.log('user: ', user);
-    // console.log('eventObject: ', eventObject);
 
     if (eventObject.has(event)) {
-      // console.log('checkingggg: ', eventObject.get(event))
 
       const res = eventObject.get(event);
 
-      // if ((winner === "yes" && res?.yes) || (winner === "no" && res?.no)) {
-      //   let currentBalance = INR_BALANCES.get(user)!.balance;
-      //   let locked = INR_BALANCES.get(user)!.locked;
-      //   currentBalance += res[winner]!.quantity * 10 * 100;
-      //   INR_BALANCES.set(user, { balance: currentBalance, locked: locked });
-      // }
-
-      if (winner === "yes" && res?.yes) {
+      if ((winner === "yes" && res?.yes) || (winner === "no" && res?.no)) {
         let currentBalance = INR_BALANCES.get(user)!.balance;
         let locked = INR_BALANCES.get(user)!.locked;
-        currentBalance += res.yes.quantity * 10 * 100;
-        INR_BALANCES.set(user, { balance: currentBalance, locked: locked });
-      }
-
-      if (winner === "no" && res?.no) {
-        let currentBalance = INR_BALANCES.get(user)!.balance;
-        let locked = INR_BALANCES.get(user)!.locked;
-        currentBalance += res.no.quantity * 10 * 100;
+        currentBalance += res[winner]!.quantity * 10 * 100;
         INR_BALANCES.set(user, { balance: currentBalance, locked: locked });
       }
     }
@@ -1129,7 +1058,6 @@ const handleEventEnd = (event: string) => {
 
 const checkForEndedEvents = () => {
   const toBeDeleted = [];
-  console.log("event count:- ", STOCK_END_TIMES.size);
   for (const [event, endTime] of STOCK_END_TIMES) {
 
     const diff = new Date(endTime).getTime() - new Date().getTime();
@@ -1138,9 +1066,7 @@ const checkForEndedEvents = () => {
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
       const timeLeft = `${minutes}m ${seconds}s`;
 
-      console.log("event: ", event, "time left: ", timeLeft);
     } else {
-      console.log(`Event ${event} ended`);
       handleEventEnd(event);
       toBeDeleted.push(event);
     }
