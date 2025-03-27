@@ -1,0 +1,52 @@
+name: Build and Push Multiple Docker Images
+
+on:
+  push:
+    branches:
+      - main # Runs on push to main branch
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      # Build and Push Frontend Image
+      - name: Build & Push Frontend
+        run: |
+          docker build -t nsharc4/frontend-optixchange:latest ./frontend/options-trading-website
+          docker push nsharc4/frontend-optixchange:latest
+
+      # Build and Push Express Server Image
+      - name: Build & Push Express Server
+        run: |
+          docker build -t nsharc4/express-server-optixchange:latest ./express-server
+          docker push nsharc4/express-server-optixchange:latest
+
+      # Build and Push Engine Server Image
+      - name: Build & Push Engine Server
+        run: |
+          docker build -t nsharc4/engine-server-optixchange:latest ./engine
+          docker push nsharc4/engine-server-optixchange:latest
+
+      # Build and Push WebSocket Server Image
+      - name: Build & Push WebSocket Server
+        run: |
+          docker build -t nsharc4/ws-server-optixchange:latest ./ws-server
+          docker push nsharc4/ws-server-optixchange:latest
+
+      # Build and Push DB Server Image
+      - name: Build & Push DB Server
+        run: |
+          docker build -t nsharc4/db-server-optixchange:latest ./db
+          docker push nsharc4/db-server-optixchange:latest
+
+      # Build and Push Market Maker Image
+      - name: Build & Push Market Maker
+        run: |
+          docker build -t nsharc4/mm-server-optixchange:latest ./mm
+          docker push nsharc4/mm-server-optixchange:latest
