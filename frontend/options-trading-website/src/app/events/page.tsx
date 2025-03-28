@@ -6,7 +6,6 @@ import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { API_URL } from "@/utils/constants";
 
 type EventDetails = {
   event: string;
@@ -18,6 +17,10 @@ type EventDetails = {
 
 export default function EventsScreen() {
   const [events, setEvents] = useState<EventDetails[]>([]);
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  console.log("API_URL check:- ", API_URL);
 
   const router = useRouter();
 

@@ -14,11 +14,14 @@ spec:
     spec:
       containers:
         - name: frontend
+          volumeMounts:
+            - name: env-volume
+              mountPath: /app/.env
+              subPath: .env
           image: nsharc4/frontend-optixchange:latest
           ports:
             - containerPort: 3000
-          env:
-            - name: NEXT_PUBLIC_API_URL
-              value: "http://139.59.51.208:3000"
-            - name: NEXT_PUBLIC_WS_URL
-              value: "ws://144.126.253.177:8081"
+      volumes:
+        - name: env-volume
+          configMap:
+            name: frontend-config

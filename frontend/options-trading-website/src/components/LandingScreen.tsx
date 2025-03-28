@@ -4,14 +4,14 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useContext, useState } from "react";
 import { XCircleIcon } from "@heroicons/react/20/solid";
-import { API_URL, WS_URL } from "@/utils/constants";
 import { UserContext, UserContextType } from "@/context/UserContext";
 
 export default function LandingScreen() {
   const router = useRouter();
 
-  console.log("API_URL check now", API_URL);
-  console.log("WS_URL checkkk: ", WS_URL);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  console.log("API_URL check:- ", API_URL);
 
   const [isError] = useState(false);
 

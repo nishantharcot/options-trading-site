@@ -19,7 +19,6 @@ import { FormEvent, useContext, useEffect, useState } from "react";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { UserContext, UserContextType } from "@/context/UserContext";
-import { API_URL } from "@/utils/constants";
 
 type EventDetails = {
   event: string;
@@ -33,6 +32,10 @@ export default function Navbar() {
   const [mintTokensOpen, setmintTokensOpen] = useState(false);
   const { userId, setUserId, userBalance, setUserBalance }: UserContextType =
     useContext(UserContext);
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  console.log("API_URL check:- ", API_URL);
 
   const [refetch, setRefetch] = useState(true);
 

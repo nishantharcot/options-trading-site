@@ -21,7 +21,6 @@ import { sortByPrice } from "@/utils/helperFunctions";
 import { Transition } from "@headlessui/react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { API_URL } from "@/utils/constants";
 
 type orderbookData = {
   price: number;
@@ -32,6 +31,10 @@ export default function EventDetailsScreen() {
   const { eventId }: { eventId: string } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  console.log("API_URL check:- ", API_URL);
 
   const [endTime] = useState(searchParams.get("endTime"));
   const [timeLeft, setTimeLeft] = useState("");
