@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: express-server
+  template:
+    metadata:
+      labels:
+        app: express-server
+    spec:
+      containers:
+        - name: express-server
+          image: nsharc4/express-server-optixchange:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: REDIS_PORT
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: REDIS_PASSWORD

@@ -17,7 +17,6 @@ function marketMakers() {
         setInterval(MarketMaker.getInstance().placeOrderRandomly, 300);
       } catch(e) {
         console.log('error: ', e);
-        startMarket();
       }
     }
 

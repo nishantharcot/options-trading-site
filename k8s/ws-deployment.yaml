@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websocket-server
+  template:
+    metadata:
+      labels:
+        app: websocket-server
+    spec:
+      containers:
+        - name: websocket-server
+          image: nsharc4/ws-server-optixchange:latest
+          ports:
+            - containerPort: 8081

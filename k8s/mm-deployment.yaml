@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mm-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mm-server
+  template:
+    metadata:
+      labels:
+        app: mm-server
+    spec:
+      containers:
+        - name: mm-server
+          image: nsharc4/mm-server-optixchange:latest
+          ports:
+            - containerPort: 4000
+          env:
+            - name: API_URL
+              value: "http://express-server:3000"
