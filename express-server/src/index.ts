@@ -8,7 +8,6 @@ import stockRouter from "./routes/stockRoutes";
 
 const app = express();
 
-
 console.log('url check:- ', `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`);
 const redisClient = createClient({
   url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,

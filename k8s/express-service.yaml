@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: express-server
 spec:
-  type: ClusterIP
   selector:
     app: express-server
   ports:
     - protocol: TCP
       port: 3000
       targetPort: 3000
+  type: LoadBalancer

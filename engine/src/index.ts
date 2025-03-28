@@ -47,6 +47,7 @@ async function processSubmission({
   switch (request.type) {
     case "CREATE_USER":
       try {
+        console.log('request came!!');
         const { userId } = request.data;
         if (!INR_BALANCES.has(userId)) {
           INR_BALANCES.set(userId, { balance: 0, locked: 0 });
