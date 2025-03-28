@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: websocket-server
 spec:
-  ports:
-    - port: 8081
-      targetPort: 8081
   selector:
     app: websocket-server
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
   type: LoadBalancer
