@@ -9,7 +9,7 @@ import { UserContext, UserContextType } from "@/context/UserContext";
 export default function LandingScreen() {
   const router = useRouter();
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_URL = "http://139.59.51.208:3000";
 
   console.log("API_URL check:- ", API_URL);
 

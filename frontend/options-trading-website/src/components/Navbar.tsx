@@ -33,7 +33,7 @@ export default function Navbar() {
   const { userId, setUserId, userBalance, setUserBalance }: UserContextType =
     useContext(UserContext);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_URL = "http://139.59.51.208:3000";
 
   console.log("API_URL check:- ", API_URL);
 

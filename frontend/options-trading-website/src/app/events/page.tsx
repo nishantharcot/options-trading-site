@@ -18,9 +18,7 @@ type EventDetails = {
 export default function EventsScreen() {
   const [events, setEvents] = useState<EventDetails[]>([]);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-  console.log("API_URL check:- ", API_URL);
+  const API_URL = "http://139.59.51.208:3000";
 
   const router = useRouter();
 
