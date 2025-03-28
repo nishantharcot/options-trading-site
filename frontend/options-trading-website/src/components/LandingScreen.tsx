@@ -21,6 +21,7 @@ export default function LandingScreen() {
     const formData = new FormData(form);
     const userId = formData.get("text")?.toString();
 
+    console.log("checking if latest!!!");
     console.log("API_URL check:- ", API_URL);
 
     fetch(`${API_URL}/user/create/${userId}`, {
