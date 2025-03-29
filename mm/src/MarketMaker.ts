@@ -207,6 +207,8 @@ export class MarketMaker {
       const quantity = 1 + Math.floor(Math.random()*10);
 
       console.log("temp temp temp!!!");
+
+      console.log("url checking:- ", API_URL + "/order/sell");
   
       const res1Json = await fetch(API_URL + "/order/sell", {
         method: "POST",
