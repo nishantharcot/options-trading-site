@@ -20,7 +20,7 @@ const routers = [
   { path: '', router: userRouter },
   { path: '', router: symbolRouter },
   { path: '', router: getRouter },
-  {path: '/order', router: stockRouter}
+  {path: '/api/order', router: stockRouter}
 ];
 
 routers.forEach(({ path, router }) => app.use(path, router));
