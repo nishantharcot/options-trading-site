@@ -4,6 +4,7 @@ metadata:
   name: frontend-ingress
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/websocket-services: websocket-server
 spec:
   ingressClassName: nginx
   tls:
