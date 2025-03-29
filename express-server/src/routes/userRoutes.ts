@@ -8,7 +8,7 @@ import {
 
 const userRouter = express.Router();
 
-userRouter.post("/user/create/:userId", createUser);
+userRouter.post("/api/user/create/:userId", createUser);
 userRouter.post("/reset", resetData);
 userRouter.post("/onramp/inr", onrampInr);
 userRouter.post("/trade/mint", mintTokens);
