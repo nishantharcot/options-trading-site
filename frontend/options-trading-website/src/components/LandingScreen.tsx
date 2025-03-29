@@ -9,7 +9,7 @@ import { UserContext, UserContextType } from "@/context/UserContext";
 export default function LandingScreen() {
   const router = useRouter();
 
-  const API_URL = "http://139.59.51.208:3000";
+  const API_URL = "https://optixchanges.com/api";
 
   console.log("API_URL check:- ", API_URL);
 

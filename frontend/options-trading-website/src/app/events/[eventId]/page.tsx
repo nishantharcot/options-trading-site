@@ -32,7 +32,7 @@ export default function EventDetailsScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const API_URL = "http://139.59.51.208:3000";
+  const API_URL = "https://optixchanges.com/api";
 
   console.log("API_URL check:- ", API_URL);
 

@@ -18,7 +18,7 @@ type EventDetails = {
 export default function EventsScreen() {
   const [events, setEvents] = useState<EventDetails[]>([]);
 
-  const API_URL = "http://139.59.51.208:3000";
+  const API_URL = "https://optixchanges.com/api";
 
   const router = useRouter();
 

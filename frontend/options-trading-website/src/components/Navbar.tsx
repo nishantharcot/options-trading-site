@@ -33,7 +33,7 @@ export default function Navbar() {
   const { userId, setUserId, userBalance, setUserBalance }: UserContextType =
     useContext(UserContext);
 
-  const API_URL = "http://139.59.51.208:3000";
+  const API_URL = "https://optixchanges.com/api";
 
   console.log("API_URL check:- ", API_URL);
 
