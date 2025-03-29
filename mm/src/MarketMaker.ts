@@ -29,6 +29,7 @@ export class MarketMaker {
 
   public createUsers() {
     const userCreate = async () => {
+      console.log("API_URL:- ", API_URL);
       const userPromises = MarketMaker.getInstance().users.map(user => fetch(API_URL + `/user/create/${user}`, { method: "POST" }));
       const userJson = await Promise.all(userPromises);
       const userData = await Promise.all(userJson.map(data => data.json()));
@@ -189,6 +190,7 @@ export class MarketMaker {
   }
 
   public placeOrderRandomly() {
+    console.log('placeOrderRandomly reached!!!')
     const event = MarketMaker.getInstance().getRandomEvent();
 
     if (Date.now() >= MarketMaker.getInstance().eventEndTimes.get(event)!.getTime()) {
@@ -202,6 +204,8 @@ export class MarketMaker {
       const user = MarketMaker.getInstance().getRandomUser();
       const price = MarketMaker.getInstance().getRandomPrice();
       const quantity = 1 + Math.floor(Math.random()*10);
+
+      console.log();
   
       const res1Json = await fetch(API_URL + "/order/sell", {
         method: "POST",

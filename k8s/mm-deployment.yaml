@@ -19,4 +19,4 @@ spec:
             - containerPort: 4000
           env:
             - name: API_URL
-              value: "http://express-server:3000"
+              value: "http://express-server:3000/api"
