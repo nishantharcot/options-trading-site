@@ -29,3 +29,10 @@ spec:
                 name: express-server
                 port:
                   number: 3000
+          - path: /ws
+            pathType: Prefix
+            backend:
+              service:
+                name: websocket-server
+                port:
+                  number: 8081
