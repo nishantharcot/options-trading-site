@@ -8,7 +8,7 @@ import stockRouter from "./routes/stockRoutes";
 
 const app = express();
 
-console.log('url check:- ', `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`);
+console.log('url check:- ', `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`)
 const redisClient = createClient({
   url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
 });
@@ -20,7 +20,7 @@ const routers = [
   { path: '', router: userRouter },
   { path: '', router: symbolRouter },
   { path: '', router: getRouter },
-  {path: '/api/order', router: stockRouter}
+  {path: '', router: stockRouter}
 ];
 
 routers.forEach(({ path, router }) => app.use(path, router));
