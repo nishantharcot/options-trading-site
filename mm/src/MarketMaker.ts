@@ -190,7 +190,7 @@ export class MarketMaker {
   }
 
   public placeOrderRandomly() {
-    console.log('placeOrderRandomly reached!!!')
+    console.log('placeOrderRandomly reached!!!');
     const event = MarketMaker.getInstance().getRandomEvent();
 
     if (Date.now() >= MarketMaker.getInstance().eventEndTimes.get(event)!.getTime()) {
@@ -201,11 +201,12 @@ export class MarketMaker {
     }
 
     const temp = async () => {
+      console.log('temp placeOrderRandomly called!!!');
       const user = MarketMaker.getInstance().getRandomUser();
       const price = MarketMaker.getInstance().getRandomPrice();
       const quantity = 1 + Math.floor(Math.random()*10);
 
-      console.log();
+      console.log("temp temp temp!!!");
   
       const res1Json = await fetch(API_URL + "/order/sell", {
         method: "POST",
@@ -221,7 +222,11 @@ export class MarketMaker {
         }),
       })
 
+      console.log("res1Json check:- ", res1Json);
+
       const res1Data = await res1Json.json();
+
+      console.log("res1Data check:- ", res1Json);
 
       if (res1Data.message.payload === "Insufficient INR balance") {
         MarketMaker.getInstance().addBalanceToUser(user);
