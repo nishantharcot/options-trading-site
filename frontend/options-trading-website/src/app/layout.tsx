@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Optixhanges: India's Leading Online Skill Gaming Platform",
+  title: "Optixchanges: India's Leading Online Skill Gaming Platform",
   description: "Predict Events and win",
 };
 

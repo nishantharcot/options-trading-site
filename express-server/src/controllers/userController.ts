@@ -10,6 +10,8 @@ export const createUser = async (
 
   const { userId } = req.params;
 
+  console.log('userID:- ', userId);
+
   const response = await RedisManager.getInstance().sendAndAwait({
     type: "CREATE_USER",
     data: {
