@@ -70,7 +70,7 @@ export class MarketMaker {
 
   public createEventAndMintTokens(event: string) {
     const newEvent = async () => {
-      const deadline = new Date(Date.now() + 3*60*1000);
+      const deadline = new Date(Date.now() + 30*60*1000);
 
       const resJson = await fetch(API_URL + `/symbol/create/${encodeURIComponent(event)}`, { method: "POST", headers: {
         "Content-Type": "application/json"

@@ -14,7 +14,7 @@ function marketMakers() {
         res = await MarketMaker.getInstance().initializeEventsAndMintTokens();
   
         console.log("starting after initializeEventsAndMintTokens");
-        setInterval(MarketMaker.getInstance().placeOrderRandomly, 300);
+        setInterval(MarketMaker.getInstance().placeOrderRandomly, 3000);
       } catch(e) {
         console.log('error: ', e);
         startMarket();
