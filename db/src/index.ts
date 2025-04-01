@@ -89,8 +89,6 @@ async function main() {
     });
     await redisClient.connect();
   
-    console.log("process.env.MONGO_URL:- ", process.env.MONGO_URL);
-  
     await mongoose.connect(process.env.MONGO_URL || "");
   
     console.log("connected to DB");

@@ -65,7 +65,6 @@ export type OrderBook = Map<string, OrderType>;
 
 export function deserializeOrderBook(json: string): OrderBook {
   const parsedArray = JSON.parse(json);
-  // console.log(parsedArray);
   return new Map(
     parsedArray.map(([key, orderType]: [key: string, orderType: OrderType]) => {
       return [

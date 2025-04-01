@@ -37,7 +37,6 @@ export class SignalingManager {
 
       if (this.callbacks[message.event]) {
         this.callbacks[message.event].forEach(({ callback }: {callback: any}) => {
-          console.log("message check:- ", message);
           const newOrderbook = message.eventOrderbook;
           callback(newOrderbook);
         });
@@ -59,8 +58,6 @@ export class SignalingManager {
   }
 
   async registerCallback(event: string, callback: any) {
-
-    console.log('registerCallback:- ', event);
 
     this.callbacks[event] = this.callbacks[event] || [];
     this.callbacks[event].push({ callback, event });

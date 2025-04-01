@@ -29,7 +29,6 @@ export class MarketMaker {
 
   public createUsers() {
     const userCreate = async () => {
-      console.log("API_URL:- ", API_URL);
       const userPromises = MarketMaker.getInstance().users.map(user => fetch(API_URL + `/user/create/${user}`, { method: "POST" }));
       const userJson = await Promise.all(userPromises);
       const userData = await Promise.all(userJson.map(data => data.json()));
@@ -190,7 +189,6 @@ export class MarketMaker {
   }
 
   public placeOrderRandomly() {
-    console.log('placeOrderRandomly reached!!!');
     const event = MarketMaker.getInstance().getRandomEvent();
 
     if (Date.now() >= MarketMaker.getInstance().eventEndTimes.get(event)!.getTime()) {
@@ -201,14 +199,9 @@ export class MarketMaker {
     }
 
     const temp = async () => {
-      console.log('temp placeOrderRandomly called!!!');
       const user = MarketMaker.getInstance().getRandomUser();
       const price = MarketMaker.getInstance().getRandomPrice();
       const quantity = 1 + Math.floor(Math.random()*10);
-
-      console.log("temp temp temp!!!");
-
-      console.log("url checking:- ", API_URL + "/order/sell");
   
       const res1Json = await fetch(API_URL + "/order/sell", {
         method: "POST",
@@ -224,11 +217,7 @@ export class MarketMaker {
         }),
       })
 
-      console.log("res1Json check:- ", res1Json);
-
       const res1Data = await res1Json.json();
-
-      console.log("res1Data check:- ", res1Json);
 
       if (res1Data.message.payload === "Insufficient INR balance") {
         MarketMaker.getInstance().addBalanceToUser(user);

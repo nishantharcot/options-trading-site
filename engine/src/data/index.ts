@@ -77,8 +77,6 @@ export const ORDER_QUEUES: OrderQueues = {
 
 export async function initData() {
 
-  console.log("process.env.MONGO_URL:", process.env.MONGO_URL);
-
   await mongoose.connect(process.env.MONGO_URL || "");
 
   console.log("connected to DB");
@@ -93,31 +91,23 @@ export async function initData() {
         OrderQueuesModel.find().lean()
       ]);
 
-      console.log('data loaded from DB!')
-    // console.log("orderQueuesData: ", orderQueuesData);
-
     if (inrBalancesData) {
       INR_BALANCES.clear();
       const deserializedBalances = deserializeUserBalances((inrBalancesData));
       deserializedBalances.forEach((value, key) => INR_BALANCES.set(key, value));
 
-      // console.log("INR_BALANCES: ", INR_BALANCES);
     }
 
     if (orderBookData) {
       ORDERBOOK.clear();
       const deserializedOrderBook = deserializeOrderBook((orderBookData));
       deserializedOrderBook.forEach((value, key) => ORDERBOOK.set(key, value));
-
-      // console.log("ORDERBOOK: ", ORDERBOOK);
     }
 
     if (stockBalancesData) {
       STOCK_BALANCES.clear();
       const deserializedStockBalances = deserializeStockBalances((stockBalancesData));
       deserializedStockBalances.forEach((value, key) => STOCK_BALANCES.set(key, value));
-
-      // console.log("STOCK_BALANCES: ", STOCK_BALANCES);
     }
 
     if (stockEndTimesData) {
@@ -125,7 +115,6 @@ export async function initData() {
       const deserializedStockEndTimes = deserializeStockEndTimes(stockEndTimesData);
       deserializedStockEndTimes.forEach((value, key) => STOCK_END_TIMES.set(key, value));
 
-      // console.log("STOCK_END_TIMES: ", STOCK_END_TIMES);
     }
 
     if (orderQueuesData) {
@@ -136,7 +125,6 @@ export async function initData() {
       ORDER_QUEUES.BUY_ORDER_QUEUE = deserializedOrderQueues.BUY_ORDER_QUEUE;
       ORDER_QUEUES.SELL_ORDER_QUEUE = deserializedOrderQueues.SELL_ORDER_QUEUE;
 
-      // console.log("ORDER_QUEUES: ", ORDER_QUEUES);
     }
 
     console.log("Data initialized successfully.");

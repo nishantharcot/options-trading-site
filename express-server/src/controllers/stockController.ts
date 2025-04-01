@@ -5,8 +5,6 @@ import { STOCK_TYPE } from "../types";
 export const buyStock = async (req: express.Request, res: express.Response) => {
   const { userId, stockSymbol, quantity, price, stockType } = req.body;
 
-  // console.log("req check:- ", userId, stockSymbol, quantity, price, stockType);
-
   const response = await RedisManager.getInstance().sendAndAwait({
     type: "BUY",
     data: {

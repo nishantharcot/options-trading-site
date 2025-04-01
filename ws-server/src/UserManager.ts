@@ -23,10 +23,8 @@ export class UserManager {
   }
 
   private registerOnClose(ws: WebSocket, id: string) {
-    console.log('register on close yo!!')
     ws.on('close', () => {
       this.users.delete(id)
-      console.log('did it reach here???')
       SubscriptionManager.getInstance().userLeft(id)
     })
   }

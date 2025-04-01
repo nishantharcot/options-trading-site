@@ -36,7 +36,6 @@ export type OrderBook = Map<string, OrderType>;
 
 export function deserializeOrderBook(json: string): OrderBook {
   const parsedArray = JSON.parse(json);
-  console.log(parsedArray);
   return new Map(
     parsedArray.map(([key, orderType]: [key: string, orderType: OrderType]) => {
       return [
@@ -71,9 +70,7 @@ export function deserializeOrderBook(json: string): OrderBook {
 }
 
 export function deserializeOrderBookForEvent(json: any): any {
-  console.log("json check:- ", json);
   const parsedArray = json;
-  console.log(parsedArray);
   return new Map([
     [
       "yes",

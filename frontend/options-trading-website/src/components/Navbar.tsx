@@ -35,8 +35,6 @@ export default function Navbar() {
 
   const API_URL = "https://optixchanges.com/api";
 
-  console.log("API_URL check:- ", API_URL);
-
   const [refetch, setRefetch] = useState(true);
 
   const [mintEventSelected, setmintEventSelected] = useState("");
@@ -57,7 +55,6 @@ export default function Navbar() {
         }
 
         finalRes.forEach((data: any) => {
-          console.log("data check:- ", data);
           const eventName = data[0];
           let yP = 10,
             nP = 10;
@@ -126,7 +123,6 @@ export default function Navbar() {
 
     const res = await tempRes.json();
 
-    console.log("res check:- ", res);
     setRefetch(!refetch);
   };
 

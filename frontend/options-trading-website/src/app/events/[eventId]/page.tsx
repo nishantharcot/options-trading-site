@@ -34,19 +34,13 @@ export default function EventDetailsScreen() {
 
   const API_URL = "https://optixchanges.com/api";
 
-  console.log("API_URL check:- ", API_URL);
-
   const [endTime] = useState(searchParams.get("endTime"));
   const [timeLeft, setTimeLeft] = useState("");
-
-  console.log("endTime: ", endTime);
 
   const [refetch, setRefetch] = useState(true);
 
   const { userId } = useContext(UserContext);
   const decodedEventId = decodeURIComponent(eventId);
-
-  console.log("decodedEventId: ", decodedEventId);
 
   const [noData, setNoData] = useState<orderbookData[]>();
   const [yesData, setYesData] = useState<orderbookData[]>();
@@ -56,7 +50,6 @@ export default function EventDetailsScreen() {
   const [orderType, setOrderType] = useState("Buy");
   const [stockType, setStockType] = useState("no");
 
-  // console.log("orderType check:- ", orderType);
   const [showNotification, setshowNotification] = useState(false);
   const [notificationContent, setNotificationContent] = useState("");
   const [notificationSuccess, setnotificationSuccess] = useState(true);
@@ -113,7 +106,6 @@ export default function EventDetailsScreen() {
 
       const res2 = await res.json();
 
-      // console.log("res2:- ", res2);
       setRefetch(!refetch);
       setshowNotification(true);
       setNotificationContent(res2.message);
@@ -139,7 +131,6 @@ export default function EventDetailsScreen() {
   const [tabs, setTabs] = useState(initialTabs);
 
   const handleTabClick = (clickedTabName: string) => {
-    // console.log("clickedTabName:- ", clickedTabName);
     setStockType(clickedTabName.toLowerCase());
     setTabs((prevTabs) =>
       prevTabs.map((tab) => ({
@@ -180,17 +171,12 @@ export default function EventDetailsScreen() {
     }
     getEventData();
 
-    console.log("event: ", encodeURIComponent(eventId));
-
     SignalingManager.getInstance().registerCallback(
       decodedEventId,
       (data: OrderType) => {
-        console.log("data check:-", data);
         const orderbook = data;
         const yesArray = [];
         const noArray = [];
-
-        console.log(orderbook);
 
         for (const stockType of ["yes", "no"] as const) {
           if (!orderbook[stockType]) {

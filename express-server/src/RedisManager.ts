@@ -9,7 +9,6 @@ export class RedisManager {
   private static instance: RedisManager
 
   private constructor() {
-    console.log('url check:- ', `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`);
     this.client = createClient({
       url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
     });
