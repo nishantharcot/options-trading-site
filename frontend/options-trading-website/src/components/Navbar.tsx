@@ -122,7 +122,7 @@ export default function Navbar() {
     });
 
     const res = await tempRes.json();
-
+    console.log(res);
     setRefetch(!refetch);
   };
 
