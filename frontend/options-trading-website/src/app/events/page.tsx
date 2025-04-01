@@ -35,6 +35,8 @@ export default function EventsScreen() {
         return;
       }
 
+      console.log("orderbook data:- ", orderbookData);
+
       const temp: EventDetails[] = [];
 
       orderbookData.forEach((data: any) => {
@@ -77,6 +79,7 @@ export default function EventsScreen() {
       });
       setEvents(temp);
       const interval = setInterval(() => {
+        console.log("events check:- ", events);
         setEvents((events) => {
           return events.filter((data) => {
             const diff =
