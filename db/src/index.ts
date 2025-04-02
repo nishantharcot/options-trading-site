@@ -93,7 +93,7 @@ async function main() {
   
     console.log("connected to DB");
   
-    setInterval(saveToDb, 60*1000);
+    setInterval(saveToDb, 60*60*1000);
   
     while (true) {
       const responseOrderBook = await redisClient.brPop("db_server:orderbook", 0);
