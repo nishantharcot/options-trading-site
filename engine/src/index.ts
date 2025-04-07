@@ -95,12 +95,12 @@ async function processSubmission({
       try {
         const { userId, password } = request.data;
 
-        console.log("user Id:- ", userId);
-        console.log("password:- ", password);
+        // console.log("user Id:- ", userId);
+        // console.log("password:- ", password);
 
         const userExists = await User.findOne({ userId });
 
-        console.log("userExists:- ", userExists);
+        // console.log("userExists:- ", userExists);
       
         if (userExists) {
           RedisManager.getInstance().sendToApi(clientID, {
@@ -116,7 +116,7 @@ async function processSubmission({
         await user.save();
 
 
-        console.log("token check:- ", process.env.JWT_SECRET);
+        // console.log("token check:- ", process.env.JWT_SECRET);
 
         // Generate JWT token
         const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!);
@@ -136,7 +136,7 @@ async function processSubmission({
           }
         }
 
-        console.log("INR_BALANCES user check:- ", INR_BALANCES.get(userId));
+        // console.log("INR_BALANCES user check:- ", INR_BALANCES.get(userId));
 
         RedisManager.getInstance().sendToApi(clientID, {
           type: "SIGNUP_SUCCESSFUL",
@@ -421,13 +421,13 @@ async function processSubmission({
       try {
         const { userId } = request.data;
 
-        console.log("userId:- ", userId);
-        console.log("INR_BALANCES.has(userId):- ", INR_BALANCES.has(userId));
+        // console.log("userId:- ", userId);
+        // console.log("INR_BALANCES.has(userId):- ", INR_BALANCES.has(userId));
 
         if (INR_BALANCES.has(userId)) {
           const { balance } = INR_BALANCES.get(userId)!;
 
-          console.log("balance check:- ", balance);
+          // console.log("balance check:- ", balance);
 
           RedisManager.getInstance().sendToApi(clientID, {
             type: "GET_USER_BALANCE",

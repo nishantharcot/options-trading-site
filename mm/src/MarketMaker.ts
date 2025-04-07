@@ -391,7 +391,7 @@ export class MarketMaker {
       console.log("res1Data:- ", res1Data);
 
       if (res1Data.message.payload === "Insufficient INR balance") {
-        console.log("Reacharging!");
+        console.log("Recharging!");
         MarketMaker.getInstance().addBalanceToUser(user);
         return;
       }
@@ -418,7 +418,7 @@ export class MarketMaker {
       console.log("res2Data:- ", res2Data);
 
       if (res2Data.message.payload === "Insufficient INR balance") {
-        console.log("Reacharging!");
+        console.log("Recharging!");
         MarketMaker.getInstance().addBalanceToUser(user);
       }
     };

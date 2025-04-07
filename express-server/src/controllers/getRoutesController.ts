@@ -65,7 +65,7 @@ export const getUserBalance = async (
 ) => {
   const { userId } = req.params;
 
-  console.log("userId:- ", userId);
+  // console.log("userId:- ", userId);
 
   const response = await RedisManager.getInstance().sendAndAwait({
     type: "GET_USER_BALANCE",

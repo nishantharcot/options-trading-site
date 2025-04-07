@@ -7,7 +7,7 @@ export const createUser = async (
 ) => {
   const { userId } = req.params;
 
-  console.log("userId check:- ", userId);
+  // console.log("userId check:- ", userId);
 
   const response = await RedisManager.getInstance().sendAndAwait({
     type: "CREATE_USER",
@@ -25,7 +25,7 @@ export const signUp = async (
 ) => {
   const { userId, password } = req.body;
 
-  console.log("userId check:- ", userId);
+  // console.log("userId check:- ", userId);
 
   const response = await RedisManager.getInstance().sendAndAwait({
     type: "SIGNUP",
@@ -36,10 +36,10 @@ export const signUp = async (
   });
 
 
-  console.log("response check:- ", response);
+  // console.log("response check:- ", response);
 
   if (response.payload.token) {
-    console.log("yo man")
+    // console.log("yo man")
     res.cookie("authToken", response.payload.token, {
       httpOnly: true,
       secure: true,
@@ -48,7 +48,7 @@ export const signUp = async (
   }
 
 
-  console.log("payload check:- ", response.payload)
+  // console.log("payload check:- ", response.payload)
 
   res.json(response.payload);
 };
@@ -70,7 +70,7 @@ export const signIn = async (
   });
 
   if (response.payload.token) {
-    console.log("yo man")
+    // console.log("yo man")
     res.cookie("authToken", response.payload.token, {
       httpOnly: true,
       secure: true,
