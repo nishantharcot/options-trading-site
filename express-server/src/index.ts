@@ -47,7 +47,10 @@ app.get("/api/check-auth", (req: any, res: any) => {
   }
 });
 
+console.log("Express server code reached!!!")
+
 async function startServer() {
+  console.log("Reaching here!!!")
   try {
     await redisClient.connect();
 
