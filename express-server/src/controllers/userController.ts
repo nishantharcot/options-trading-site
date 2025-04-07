@@ -35,6 +35,9 @@ export const signUp = async (
     },
   });
 
+
+  console.log("response check:- ", response);
+
   if (response.payload.token) {
     console.log("yo man")
     res.cookie("authToken", response.payload.token, {

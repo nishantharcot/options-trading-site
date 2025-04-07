@@ -7,8 +7,8 @@ export const verifyToken = (req: express.Request, res: express.Response, next: e
 
   const token2 = req.cookies?.authToken;
 
-  console.log("token 1:- ", token);
-  console.log("token 2:- ", token2);
+  // console.log("token 1:- ", token);
+  // console.log("token 2:- ", token2);
 
   if (!token && !token2) {
     res.status(401).json({ message: "Token missing" });
