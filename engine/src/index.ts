@@ -421,8 +421,13 @@ async function processSubmission({
       try {
         const { userId } = request.data;
 
+        console.log("userId:- ", userId);
+        console.log("INR_BALANCES.has(userId):- ", INR_BALANCES.has(userId));
+
         if (INR_BALANCES.has(userId)) {
           const { balance } = INR_BALANCES.get(userId)!;
+
+          console.log("balance check:- ", balance);
 
           RedisManager.getInstance().sendToApi(clientID, {
             type: "GET_USER_BALANCE",
