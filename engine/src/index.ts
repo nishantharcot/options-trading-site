@@ -95,12 +95,12 @@ async function processSubmission({
       try {
         const { userId, password } = request.data;
 
-        // console.log("user Id:- ", userId);
-        // console.log("password:- ", password);
+        console.log("user Id:- ", userId);
+        console.log("password:- ", password);
 
         const userExists = await User.findOne({ userId });
 
-        // console.log("userExists:- ", userExists);
+        console.log("userExists:- ", userExists);
       
         if (userExists) {
           RedisManager.getInstance().sendToApi(clientID, {
@@ -114,6 +114,9 @@ async function processSubmission({
 
         const user = new User({ userId, password });
         await user.save();
+
+
+        console.log("token check:- ", process.env.JWT_SECRET);
 
         // Generate JWT token
         const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!);
