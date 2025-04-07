@@ -40,7 +40,7 @@ export const signUp = async (
     res.cookie("authToken", response.payload.token, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "none",
     });
   }
 
@@ -71,7 +71,7 @@ export const signIn = async (
     res.cookie("authToken", response.payload.token, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "none",
     });
   }
 
@@ -84,8 +84,8 @@ export const signOut = async (
 ) => {
   res.clearCookie("authToken", {
     httpOnly: true,
-    sameSite: "lax",
-    // secure: true, // add this in production
+    sameSite: "none",
+    secure: true,
   });
   res.json({ message: "Logged out successfully" });
 };
