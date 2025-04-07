@@ -136,25 +136,40 @@ export class MarketMaker {
 
   public addBalanceToAllUsers() {
     const temp = async () => {
-      const onrampPromises = MarketMaker.getInstance().users.map((userId) => {
-        const token = MarketMaker.getInstance().tokens.get(userId);
 
-        return fetch(API_URL + "/onramp/inr", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            amount: 10000000,
-            userId: userId,
-          }),
-        });
+      const currentBalancesPromises = MarketMaker.getInstance().users.map((userId) => {
+        return fetch(API_URL + `/balances/inr/${userId}`);
+      });
+
+      const currentBalancesJson = await Promise.all(currentBalancesPromises);
+      const currentBalancesData = await Promise.all(currentBalancesJson.map(data => data.json()));
+
+      const onrampPromises = MarketMaker.getInstance().users.map((userId, index) => {
+        const token = MarketMaker.getInstance().tokens.get(userId);
+        if (currentBalancesData[index] < 10000) {
+          return fetch(API_URL + "/onramp/inr", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              amount: 1000000,
+              userId: userId,
+            }),
+          });
+        } else {
+          return;
+        }
       });
       try {
         const onrampJson = await Promise.all(onrampPromises);
         const onrampData = await Promise.all(
-          onrampJson.map((data) => data.json())
+          onrampJson.map((data) => {
+            if (data) {
+              return data.json();
+            }
+          })
         );
 
         console.log("onrampData:- ", onrampData);
@@ -172,6 +187,10 @@ export class MarketMaker {
 
   public createEventAndMintTokens(event: string) {
     const newEvent = async () => {
+
+      const res = await MarketMaker.getInstance().addBalanceToAllUsers();
+      console.log("addBalanceToAllUsers:- ", res[0]);
+
       const deadline = new Date(Date.now() + 3 * 60 * 1000);
 
       const resJson = await fetch(
@@ -202,7 +221,7 @@ export class MarketMaker {
           body: JSON.stringify({
             stockSymbol: encodeURIComponent(event),
             userId: user,
-            quantity: 50,
+            quantity: 250,
             price: 1000,
           }),
         });
