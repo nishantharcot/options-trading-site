@@ -85,6 +85,7 @@ export default function Navbar() {
         });
 
         setEvents(events);
+        console.log("events check in navbar:- ", events);
         if (events.length) {
           setmintEventSelected(events[0].event);
         }

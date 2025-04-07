@@ -94,6 +94,7 @@ export default function EventsScreen() {
         }
       });
       setEvents(temp);
+      console.log("events check:- ", events);
       const interval = setInterval(() => {
         setEvents((events) => {
           return events.filter((data) => {
