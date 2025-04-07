@@ -144,6 +144,8 @@ export class MarketMaker {
       const currentBalancesJson = await Promise.all(currentBalancesPromises);
       const currentBalancesData = await Promise.all(currentBalancesJson.map(data => data.json()));
 
+      console.log("currentBalancesData:- ", currentBalancesData);
+
       const onrampPromises = MarketMaker.getInstance().users.map((userId, index) => {
         const token = MarketMaker.getInstance().tokens.get(userId);
         if (currentBalancesData[index] < 10000) {
