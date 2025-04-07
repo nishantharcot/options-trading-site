@@ -10,7 +10,7 @@ export class SignalingManager {
   private callbacks: any = {};
 
   private constructor() {
-    this.ws = new WebSocket("wss://optixchanges.com/ws");
+    this.ws = new WebSocket("ws://localhost:8081");
     this.id = 1;
     this.bufferedMessages = [];
     this.init();

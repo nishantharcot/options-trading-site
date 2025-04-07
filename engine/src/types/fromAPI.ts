@@ -8,6 +8,20 @@ export type MessageFromApi =
       };
     }
   | {
+      type: "SIGNUP";
+      data: {
+        userId: string;
+        password: string;
+      };
+    }
+  | {
+      type: "SIGNIN";
+      data: {
+        userId: string;
+        password: string;
+      };
+    }
+  | {
       type: "CREATE_SYMBOL";
       data: {
         stockSymbol: string;
@@ -27,8 +41,9 @@ export type MessageFromApi =
       type: "GET_INR_BALANCES";
     }
   | {
-    type: "GET_STOCK_END_TIMES";
-  } | {
+      type: "GET_STOCK_END_TIMES";
+    }
+  | {
       type: "GET_STOCK_BALANCES";
     }
   | {

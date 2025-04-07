@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/utils.ts","./src/schema/inrbalances.ts","./src/schema/orderbook.ts","./src/schema/orderqueues.ts","./src/schema/stockbalances.ts","./src/schema/stockendtimes.ts"],"version":"5.6.3"}
+{"root":["./src/index.ts","./src/utils.ts","./src/schema/inrbalances.ts","./src/schema/orderbook.ts","./src/schema/orderqueues.ts","./src/schema/stockbalances.ts","./src/schema/stockendtimes.ts","./src/schema/users.ts"],"version":"5.6.3"}

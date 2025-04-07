@@ -22,9 +22,15 @@ import { InrBalancesModel } from "./schema/inrbalances";
 import { StockBalancesModel } from "./schema/stockbalances";
 import { OrderQueuesModel } from "./schema/orderqueues";
 import { StockEndTimeModel } from "./schema/stockendtimes";
+import { User } from "./schema/users";
 import fs from "fs";
 
 dotenv.config();
+
+const redisClient = createClient();
+const pubClient = createClient();
+const subClient = createClient();
+
 
 const STATE = {
   ORDERBOOK: [] as any[],
@@ -80,20 +86,29 @@ async function saveToDb() {
   ]);
 
   console.log(promises);
+
+  pubClient.publish("archiver:ack", "sync-complete");
 }
 
 async function main() {
   try {
-    const redisClient = createClient({
-      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-    });
     await redisClient.connect();
+    await pubClient.connect();
+    await subClient.connect();
   
     await mongoose.connect(process.env.MONGO_URL || "");
   
     console.log("connected to DB");
-  
-    setInterval(saveToDb, 60*60*1000);
+
+    await subClient.subscribe("sync:db", async (message) => {
+      const data = JSON.parse(message);
+      if (data.type === "engine-restart") {
+        console.log("Engine restarted. Forcing immediate DB sync...");
+        await saveToDb();
+      }
+    });
+
+    setInterval(saveToDb, 10*60*1000);
   
     while (true) {
       const responseOrderBook = await redisClient.brPop("db_server:orderbook", 0);
@@ -194,6 +209,7 @@ async function main() {
         // saveStockEndTimesToDb();
       }
     }
+
   } catch(e) {
     console.log('error:- ', e);
   }
