@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useContext, useState } from "react";

@@ -30,7 +30,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [eventOpen, setEventOpen] = useState(false);
   const [mintTokensOpen, setmintTokensOpen] = useState(false);
-  const { userId, setUserId, userBalance, setUserBalance }: UserContextType =
+  const { userId, userBalance, setUserBalance }: UserContextType =
     useContext(UserContext);
 
   const API_URL = "https://optixchanges.com/api";
@@ -84,16 +84,6 @@ export default function Navbar() {
         }
       });
   }, []);
-
-  useEffect(() => {
-    if (userId) {
-      return;
-    }
-
-    if (typeof window !== "undefined" && localStorage.getItem("userId")) {
-      setUserId(localStorage.getItem("userId"));
-    }
-  }, [userId]);
 
   const handleNumberOfTokens = (e: React.ChangeEvent<HTMLInputElement>) => {
     setmintNumberOfTokens(Number(e.target.value));
