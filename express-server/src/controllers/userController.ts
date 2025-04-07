@@ -38,9 +38,9 @@ export const signUp = async (
   if (response.payload.token) {
     console.log("yo man")
     res.cookie("authToken", response.payload.token, {
-      httpOnly: true,     // prevent JS access (for security)
-      sameSite: "lax",    // or "strict"
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
     });
   }
 
@@ -67,10 +67,11 @@ export const signIn = async (
   });
 
   if (response.payload.token) {
+    console.log("yo man")
     res.cookie("authToken", response.payload.token, {
-      httpOnly: true,     // prevent JS access (for security)
-      sameSite: "lax",    // or "strict"
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
     });
   }
 

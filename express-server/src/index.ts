@@ -14,8 +14,13 @@ const redisClient = createClient({
   url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
 });
 
+app.use(cors({
+  origin: "https://optixchanges.com",
+  credentials: true,
+}));
 
-app.use(cors({origin: '*', credentials: true,}))
+
+
 app.use(cookieParser());
 
 app.use(express.json());
