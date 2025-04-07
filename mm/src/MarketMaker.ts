@@ -156,7 +156,7 @@ export class MarketMaker {
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-              amount: 1000000,
+              amount: 10000000,
               userId: userId,
             }),
           });
