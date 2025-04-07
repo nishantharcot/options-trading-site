@@ -9,7 +9,7 @@ import { UserContext, UserContextType } from "@/context/UserContext";
 export default function LandingScreen() {
   const router = useRouter();
 
-  const API_URL = "http://localhost:3000/api";
+  const API_URL = "https://optixchanges.com/api";
 
   const [isError] = useState(false);
 
@@ -66,7 +66,7 @@ export default function LandingScreen() {
   };
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/check-auth", {
+    fetch(API_URL + "/check-auth", {
       credentials: "include",
     })
       .then((res) => res.json())

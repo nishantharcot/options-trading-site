@@ -38,7 +38,7 @@ export default function Navbar() {
   const { userId, setUserId, userBalance, setUserBalance }: UserContextType =
     useContext(UserContext);
 
-  const API_URL = "http://localhost:3000/api";
+  const API_URL = "https://optixchanges.com/api";
   const router = useRouter();
 
   const [refetch, setRefetch] = useState(true);
@@ -174,7 +174,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:3000/api/signout", {
+      await fetch(API_URL + "/signout", {
         method: "POST",
         credentials: "include", // must include this to send cookies
       });

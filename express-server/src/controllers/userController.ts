@@ -104,7 +104,6 @@ export const onrampInr = async (
   req: express.Request,
   res: express.Response
 ) => {
-  console.log("reached onrampInr");
   const { userId, amount } = req.body;
 
   const response = await RedisManager.getInstance().sendAndAwait({
@@ -114,8 +113,6 @@ export const onrampInr = async (
       amount,
     },
   });
-
-  console.log("response check:- ", response);
 
   res.json(response.payload);
 };

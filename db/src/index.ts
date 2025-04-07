@@ -27,9 +27,15 @@ import fs from "fs";
 
 dotenv.config();
 
-const redisClient = createClient();
-const pubClient = createClient();
-const subClient = createClient();
+const redisClient = createClient({
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+})
+const pubClient = createClient({
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+})
+const subClient = createClient({
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+})
 
 
 const STATE = {

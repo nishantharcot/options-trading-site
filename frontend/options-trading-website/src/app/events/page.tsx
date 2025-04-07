@@ -20,12 +20,12 @@ export default function EventsScreen() {
   const [events, setEvents] = useState<EventDetails[]>([]);
   const { setUserId }: UserContextType = useContext(UserContext);
 
-  const API_URL = "http://localhost:3000/api";
+  const API_URL = "https://optixchanges.com/api";
 
   const router = useRouter();
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/check-auth", {
+    fetch(API_URL + "/check-auth", {
       credentials: "include",
     })
       .then((res) => res.json())

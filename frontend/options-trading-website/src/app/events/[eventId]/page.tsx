@@ -32,7 +32,7 @@ export default function EventDetailsScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const API_URL = "http://localhost:3000/api";
+  const API_URL = "https://optixchanges.com/api";
 
   const [endTime] = useState(searchParams.get("endTime"));
   const [timeLeft, setTimeLeft] = useState("");

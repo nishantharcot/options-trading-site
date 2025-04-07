@@ -23,8 +23,7 @@ export const verifyToken = (req: express.Request, res: express.Response, next: e
   }
 
   try {
-    const decoded = jwt.verify(finalToken, "randomyoyo");
-    // req.userId = decoded; // attach user info to request
+    const decoded = jwt.verify(finalToken, process.env.JWT_SECRET!);
     next();
   } catch (err) {
     res.status(403).json({ message: "Invalid token" });

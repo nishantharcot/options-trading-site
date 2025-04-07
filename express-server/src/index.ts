@@ -10,18 +10,15 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
-const redisClient = createClient();
+const redisClient = createClient({
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+});
 
-// app.use(cors({origin: '*'}))
 
-app.use(cors({
-  origin: "http://localhost:3001", // your frontend origin
-  credentials: true,               // allow cookies
-}));
+app.use(cors({origin: '*', credentials: true,}))
 app.use(cookieParser());
 
 app.use(express.json());
-
 
 const routers = [
   { path: '', router: userRouter },
@@ -34,11 +31,10 @@ routers.forEach(({ path, router }) => app.use(path, router));
 
 app.get("/api/check-auth", (req: any, res: any) => {
   const token = req.cookies.authToken;
-  console.log("token check:- ", token);
   if (!token) return res.status(401).json({ authenticated: false });
 
   try {
-    const payload = jwt.verify(token, "randomyoyo");
+    const payload = jwt.verify(token, process.env.JWT_SECRET!);
     return res.json({ authenticated: true, user: payload });
 
   } catch {

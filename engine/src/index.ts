@@ -22,8 +22,12 @@ import { User } from "./schema/users";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const redisClient = createClient();
-const pubsubClient = createClient();
+const redisClient = createClient({
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+})
+const pubsubClient = createClient({
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+})
 
 async function publishEvents({ stockSymbol }: { stockSymbol: string }) {
   if (ORDERBOOK.has(stockSymbol)) {
@@ -112,9 +116,7 @@ async function processSubmission({
         await user.save();
 
         // Generate JWT token
-        const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!, {
-          expiresIn: "1h",
-        });
+        const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!);
 
         if (!INR_BALANCES.has(userId)) {
           INR_BALANCES.set(userId, { balance: 0, locked: 0 });
@@ -191,9 +193,7 @@ async function processSubmission({
           // console.log("step 2 passed!")
       
           // Step 3: Generate JWT
-          const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!, {
-            expiresIn: "1h",
-          });
+          const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!);
 
           // console.log("step 3 passed!")
       
