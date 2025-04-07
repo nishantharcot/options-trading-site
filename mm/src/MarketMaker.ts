@@ -148,7 +148,7 @@ export class MarketMaker {
 
       const onrampPromises = MarketMaker.getInstance().users.map((userId, index) => {
         const token = MarketMaker.getInstance().tokens.get(userId);
-        if (currentBalancesData[index] < 10000) {
+        if (Number(currentBalancesData[index].message) < 10000) {
           return fetch(API_URL + "/onramp/inr", {
             method: "POST",
             headers: {
