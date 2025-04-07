@@ -76,8 +76,6 @@ export class MarketMaker {
     const userCreate = async () => {
       // SignUp users
       const res = MarketMaker.getInstance().getPasswords();
-      console.log("res:- ", res);
-      // return;
 
       const userPromises = MarketMaker.getInstance().users.map((user) => {
         let password = MarketMaker.getInstance().passwords.get(user);
@@ -95,7 +93,7 @@ export class MarketMaker {
         MarketMaker.getInstance().tokens.set(user, userData[i]);
       });
 
-      // console.log("userData check:- ", userData);
+      console.log("userData check:- ", userData[0]);
 
       // SignOut users
       const userPromises2 = MarketMaker.getInstance().users.map((user) =>
@@ -111,7 +109,7 @@ export class MarketMaker {
       const userJson2 = await Promise.all(userPromises2);
       const userData2 = await Promise.all(userJson2.map((data) => data.json()));
 
-      console.log("userData2: ", userData2);
+      console.log("userData2: ", userData2[0]);
 
       // SignIn users
       const userPromises3 = MarketMaker.getInstance().users.map((user) => {
@@ -130,7 +128,7 @@ export class MarketMaker {
         MarketMaker.getInstance().tokens.set(user, userData3[index].token);
       });
 
-      console.log("userData3: ", userData3);
+      console.log("userData3: ", userData3[0]);
     };
 
     return userCreate();
@@ -155,7 +153,6 @@ export class MarketMaker {
       });
       try {
         const onrampJson = await Promise.all(onrampPromises);
-        console.log("onrampJson:- ", onrampJson.length);
         const onrampData = await Promise.all(
           onrampJson.map((data) => data.json())
         );
@@ -216,6 +213,7 @@ export class MarketMaker {
         mintPromisesJson.map((data) => data.json())
       );
 
+      console.log("mintPromisesData:- ", mintPromisesData[0]);
       return mintPromisesData;
     };
 
@@ -352,8 +350,6 @@ export class MarketMaker {
 
       const token = MarketMaker.getInstance().tokens.get(user);
 
-      console.log("token check:- ", token);
-
       const res1Json = await fetch(API_URL + "/order/sell", {
         method: "POST",
         headers: {
@@ -371,7 +367,10 @@ export class MarketMaker {
 
       const res1Data = await res1Json.json();
 
+      console.log("res1Data:- ", res1Data);
+
       if (res1Data.message.payload === "Insufficient INR balance") {
+        console.log("Reacharging!");
         MarketMaker.getInstance().addBalanceToUser(user);
         return;
       }
@@ -395,7 +394,10 @@ export class MarketMaker {
 
       const res2Data = await res2Json.json();
 
+      console.log("res2Data:- ", res2Data);
+
       if (res2Data.message.payload === "Insufficient INR balance") {
+        console.log("Reacharging!");
         MarketMaker.getInstance().addBalanceToUser(user);
       }
     };
