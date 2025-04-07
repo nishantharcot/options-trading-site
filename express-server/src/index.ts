@@ -5,6 +5,8 @@ import userRouter from "./routes/userRoutes";
 import symbolRouter from "./routes/symbolRoutes";
 import getRouter from "./routes/getRoutes";
 import stockRouter from "./routes/stockRoutes";
+import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
@@ -12,8 +14,11 @@ const redisClient = createClient({
   url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
 });
 
-app.use(cors({origin: '*'}))
-app.use(express.json())
+
+app.use(cors({origin: '*', credentials: true,}))
+app.use(cookieParser());
+
+app.use(express.json());
 
 const routers = [
   { path: '', router: userRouter },
@@ -23,6 +28,19 @@ const routers = [
 ];
 
 routers.forEach(({ path, router }) => app.use(path, router));
+
+app.get("/api/check-auth", (req: any, res: any) => {
+  const token = req.cookies.authToken;
+  if (!token) return res.status(401).json({ authenticated: false });
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET!);
+    return res.json({ authenticated: true, user: payload });
+
+  } catch {
+    return res.status(401).json({ authenticated: false });
+  }
+});
 
 async function startServer() {
   try {

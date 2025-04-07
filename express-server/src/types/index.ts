@@ -10,6 +10,20 @@ export type API_TO_ENGINE_ORDER_TYPES =
       };
     }
   | {
+      type: "SIGNUP";
+      data: {
+        userId: string;
+        password: string;
+      };
+    }
+  | {
+      type: "SIGNIN";
+      data: {
+        userId: string;
+        password: string;
+      };
+    }
+  | {
       type: "CREATE_SYMBOL";
       data: {
         stockSymbol: string;
@@ -27,7 +41,8 @@ export type API_TO_ENGINE_ORDER_TYPES =
     }
   | {
       type: "GET_INR_BALANCES";
-    } | {
+    }
+  | {
       type: "GET_STOCK_END_TIMES";
     }
   | {
@@ -82,5 +97,6 @@ export type API_TO_ENGINE_ORDER_TYPES =
 export type ENGINE_TO_API_RESPONSE_TYPES = {
   payload: {
     message: string;
+    token?: string;
   };
 };

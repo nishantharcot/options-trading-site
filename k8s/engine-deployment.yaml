@@ -33,3 +33,5 @@ spec:
                 secretKeyRef:
                   name: redis-secret
                   key: REDIS_PORT
+            - name: JWT_SECRET
+              value: "randomyoyo"

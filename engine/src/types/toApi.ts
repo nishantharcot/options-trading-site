@@ -6,6 +6,20 @@ export type MessageToApi =
       };
     }
   | {
+      type: "LOGIN_SUCCESSFUL";
+      payload: {
+        message: string;
+        token: string;
+      };
+    }
+  | {
+      type: "SIGNUP_SUCCESSFUL";
+      payload: {
+        message: string;
+        token: string;
+      };
+    }
+  | {
       type: "SYMBOL_CREATED";
       payload: {
         message: string;
@@ -42,11 +56,12 @@ export type MessageToApi =
       };
     }
   | {
-    type: "GET_STOCK_END_TIMES",
-    payload: {
-      message: string
+      type: "GET_STOCK_END_TIMES";
+      payload: {
+        message: string;
+      };
     }
-  } | {
+  | {
       type: "RESET_DATA";
       payload: {
         message: string;

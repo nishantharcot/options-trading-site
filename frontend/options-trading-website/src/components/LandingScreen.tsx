@@ -4,7 +4,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FormEvent, useContext, useState } from "react";
+import { FormEvent, useContext, useEffect, useState } from "react";
 import { XCircleIcon } from "@heroicons/react/20/solid";
 import { UserContext, UserContextType } from "@/context/UserContext";
 
@@ -15,6 +15,10 @@ export default function LandingScreen() {
 
   const [isError] = useState(false);
 
+  const [currentText, setCurrentText] = useState("Not a member?");
+  const [currentMode, setCurrentMode] = useState("Sign in");
+  const [oppMode, setOppMode] = useState("Sign up");
+
   const { setUserId }: UserContextType = useContext(UserContext);
 
   const userIdSubmission = (e: FormEvent<HTMLFormElement>) => {
@@ -22,22 +26,60 @@ export default function LandingScreen() {
 
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
-    const userId = formData.get("text")?.toString();
+    const userId = formData.get("userId")?.toString();
+    const password = formData.get("password")?.toString();
 
-    fetch(`${API_URL}/user/create/${userId}`, {
-      method: "POST",
-    })
-      .then((res) => res.json())
-      .then(() => {
-        if (userId) {
-          if (typeof window !== "undefined") {
-            localStorage.setItem("userId", userId);
+    console.log("userId:- ", userId);
+    console.log("password:- ", password);
+
+    if (currentMode === "Sign up") {
+      fetch(`${API_URL}/signup`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password, userId }),
+      })
+        .then((res) => res.json())
+        .then((finalRes) => {
+          if (userId) {
             setUserId(userId);
           }
-        }
-        router.push("/events");
-      });
+
+          console.log("finalRes:- ", finalRes);
+          router.push("/events");
+        });
+    } else {
+      fetch(`${API_URL}/signin`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password, userId }),
+      })
+        .then((res) => res.json())
+        .then((finalRes) => {
+          console.log("final user Id:- ", userId);
+          if (userId) {
+            setUserId(userId);
+          }
+          console.log("finalRes:- ", finalRes);
+          router.push("/events");
+        });
+    }
   };
+
+  useEffect(() => {
+    fetch(API_URL + "/check-auth", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("auth check data:- ", data);
+        if (data.authenticated) {
+          setUserId(data.user.userId);
+          router.replace("/events");
+        }
+      });
+  }, []);
 
   return (
     <div className="bg-white flex min-h-full flex-1">
@@ -61,18 +103,38 @@ export default function LandingScreen() {
               >
                 <div>
                   <label
-                    htmlFor="text"
+                    htmlFor="userId"
                     className="block text-sm/6 font-medium text-gray-900"
                   >
                     User Id
                   </label>
                   <div className="mt-2">
                     <input
-                      id="text"
-                      name="text"
+                      id="userId"
+                      name="userId"
                       type="text"
                       required
                       autoComplete="text"
+                      className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="password"
+                      className="block text-sm/6 font-medium text-gray-900"
+                    >
+                      Password
+                    </label>
+                  </div>
+                  <div className="mt-2">
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      required
+                      autoComplete="current-password"
                       className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                     />
                   </div>
@@ -98,15 +160,31 @@ export default function LandingScreen() {
                   <button
                     type="submit"
                     className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    onClick={() => {
-                      // fetch("${API_URL}/user/create");
-                      // router.push("/events");
-                    }}
                   >
-                    Submit
+                    {currentMode}
                   </button>
                 </div>
               </form>
+
+              <p className="text-center text-sm/6 mt-4 text-gray-500">
+                {currentText}{" "}
+                <button
+                  onClick={() => {
+                    if (currentText === "Not a member?") {
+                      setCurrentText("Already a member?");
+                      setOppMode("Sign in");
+                      setCurrentMode("Sign up");
+                    } else {
+                      setCurrentText("Not a member?");
+                      setOppMode("Sign up");
+                      setCurrentMode("Sign in");
+                    }
+                  }}
+                  className="font-semibold text-indigo-600 hover:text-indigo-500"
+                >
+                  {oppMode}
+                </button>
+              </p>
             </div>
           </div>
         </div>

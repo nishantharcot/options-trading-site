@@ -7,6 +7,8 @@ export const createUser = async (
 ) => {
   const { userId } = req.params;
 
+  console.log("userId check:- ", userId);
+
   const response = await RedisManager.getInstance().sendAndAwait({
     type: "CREATE_USER",
     data: {
@@ -15,6 +17,76 @@ export const createUser = async (
   });
 
   res.json(response.payload);
+};
+
+export const signUp = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const { userId, password } = req.body;
+
+  console.log("userId check:- ", userId);
+
+  const response = await RedisManager.getInstance().sendAndAwait({
+    type: "SIGNUP",
+    data: {
+      userId,
+      password
+    },
+  });
+
+  if (response.payload.token) {
+    console.log("yo man")
+    res.cookie("authToken", response.payload.token, {
+      httpOnly: true,     // prevent JS access (for security)
+      sameSite: "lax",    // or "strict"
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+  }
+
+
+  console.log("payload check:- ", response.payload)
+
+  res.json(response.payload);
+};
+
+export const signIn = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const { userId, password } = req.body;
+
+  console.log("userId check:- ", userId);
+
+  const response = await RedisManager.getInstance().sendAndAwait({
+    type: "SIGNIN",
+    data: {
+      userId,
+      password
+    },
+  });
+
+  if (response.payload.token) {
+    res.cookie("authToken", response.payload.token, {
+      httpOnly: true,     // prevent JS access (for security)
+      sameSite: "lax",    // or "strict"
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+  }
+
+  res.json(response.payload);
+};
+
+export const signOut = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  res.clearCookie("authToken", {
+    httpOnly: true,
+    sameSite: "lax",
+    // secure: true, // add this in production
+  });
+  res.json({ message: "Logged out successfully" });
 };
 
 export const resetData = async (

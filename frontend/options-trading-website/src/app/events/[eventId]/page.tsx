@@ -95,6 +95,7 @@ export default function EventDetailsScreen() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           userId: userId,
           stockSymbol: encodeURIComponent(decodedEventId),

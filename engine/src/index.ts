@@ -18,8 +18,14 @@ import {
 import { sortSellOrderQueueByPrice } from "./utils";
 import { ORDER_QUEUES } from "./data";
 import { initData } from "./data";
+import { User } from "./schema/users";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const redisClient = createClient({
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+})
+const pubsubClient = createClient({
   url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
 })
 
@@ -85,6 +91,128 @@ async function processSubmission({
         });
       }
       break;
+    case "SIGNUP":
+      try {
+        const { userId, password } = request.data;
+
+        // console.log("user Id:- ", userId);
+        // console.log("password:- ", password);
+
+        const userExists = await User.findOne({ userId });
+
+        // console.log("userExists:- ", userExists);
+      
+        if (userExists) {
+          RedisManager.getInstance().sendToApi(clientID, {
+            type: "REQUEST_FAILED",
+            payload: {
+              message: "User already exists",
+            },
+          });
+          break;
+        }
+
+        const user = new User({ userId, password });
+        await user.save();
+
+        // Generate JWT token
+        const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!);
+
+        if (!INR_BALANCES.has(userId)) {
+          INR_BALANCES.set(userId, { balance: 0, locked: 0 });
+          STOCK_BALANCES.set(userId, new Map());
+
+          for (const [key, order] of ORDERBOOK) {
+            const res = STOCK_BALANCES.get(userId);
+            if (res) {
+              res.set(key, {
+                yes: { quantity: 0, locked: 0 },
+                no: { quantity: 0, locked: 0 },
+              });
+            }
+          }
+        }
+
+        console.log("INR_BALANCES user check:- ", INR_BALANCES.get(userId));
+
+        RedisManager.getInstance().sendToApi(clientID, {
+          type: "SIGNUP_SUCCESSFUL",
+          payload: {
+            token: token,
+            message: "User Sign up successfull!",
+          },
+        });
+        
+      } catch (e) {
+        RedisManager.getInstance().sendToApi(clientID, {
+          type: "REQUEST_FAILED",
+          payload: {
+            message: "Could not create user",
+          },
+        });
+      }
+      break;
+    case "SIGNIN":
+        try {
+          const { userId, password } = request.data;
+          // console.log("userId:- ", userId);
+          // console.log("password:- ", password);
+          // Step 1: Find user by userId
+          const user = await User.findOne({ userId });
+
+          // console.log("user:- ", user);
+
+          // console.log("my password:- ", password);
+          // console.log("db password:- ", user?.password);
+      
+          if (!user || !user.password) {
+            RedisManager.getInstance().sendToApi(clientID, {
+              type: "REQUEST_FAILED",
+              payload: {
+                message: "Invalid credentials",
+              },
+            });
+            break;
+          }
+
+          // console.log("step 1 passed!")
+      
+          // Step 2: Compare password
+          const isMatch = await bcrypt.compare(password, user.password);
+          // console.log("isMatch:- ", isMatch);
+          if (!isMatch) {
+            RedisManager.getInstance().sendToApi(clientID, {
+              type: "REQUEST_FAILED",
+              payload: {
+                message: "Invalid credentials",
+              },
+            });
+            break;
+          }
+
+          // console.log("step 2 passed!")
+      
+          // Step 3: Generate JWT
+          const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!);
+
+          // console.log("step 3 passed!")
+      
+          RedisManager.getInstance().sendToApi(clientID, {
+            type: "LOGIN_SUCCESSFUL",
+            payload: {
+              token: token,
+              message: "User logged in successfully!",
+            },
+          });
+        } catch (err) {
+          RedisManager.getInstance().sendToApi(clientID, {
+            type: "REQUEST_FAILED",
+            payload: {
+              message: "Could not create user",
+            },
+          });
+        }
+        break;
     case "CREATE_SYMBOL":
       try {
         const { stockSymbol, endTime } = request.data;
@@ -1079,9 +1207,22 @@ const checkForEndedEvents = () => {
 
 async function main() {
   try {
+    await redisClient.connect();
+    await pubsubClient.connect();
+
+    pubsubClient.publish("sync:db", JSON.stringify({type: "engine-restart"}));
+
+    await new Promise<void>((resolve) => {
+      pubsubClient.subscribe("archiver:ack", (message) => {
+        if (message === "sync-complete") {
+          console.log("Archiver sync done!");
+          resolve();
+        }
+      });
+    });
+
     await initData();
 
-    await redisClient.connect();
 
     console.log("Engine connected, listening to requests");
 
@@ -1095,6 +1236,7 @@ async function main() {
       }
     }
   } catch (e) {
+    console.log("server stopped")
     console.log("Engine server failed to start:- ", e);
   }
 }

@@ -9,6 +9,10 @@ import {
   Disclosure,
   DisclosureButton,
   DisclosurePanel,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
 } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { PlusIcon } from "@heroicons/react/20/solid";
@@ -19,6 +23,7 @@ import { FormEvent, useContext, useEffect, useState } from "react";
 import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { UserContext, UserContextType } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
 
 type EventDetails = {
   event: string;
@@ -34,6 +39,7 @@ export default function Navbar() {
     useContext(UserContext);
 
   const API_URL = "https://optixchanges.com/api";
+  const router = useRouter();
 
   const [refetch, setRefetch] = useState(true);
 
@@ -100,6 +106,7 @@ export default function Navbar() {
   const mintTokens = async () => {
     const tempRes = await fetch(`${API_URL}/trade/mint`, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -123,12 +130,15 @@ export default function Navbar() {
     const formData = new FormData(form);
     const amount = Number(formData.get("text"));
 
+    console.log("userId: ", userId);
+
     if (!Number.isNaN(amount)) {
       fetch(`${API_URL}/onramp/inr`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           userId: userId,
           amount: amount * 100,
@@ -162,7 +172,22 @@ export default function Navbar() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch(API_URL + "/signout", {
+        method: "POST",
+        credentials: "include", // must include this to send cookies
+      });
+
+      // Redirect to login page or landing
+      router.push("/");
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
+
   useEffect(() => {
+    console.log("userId:- ", userId);
     if (userId) {
       fetch(`${API_URL}/balances/inr/${userId}`)
         .then((res) => res.json())
@@ -194,7 +219,7 @@ export default function Navbar() {
                 />
               </DisclosureButton>
             </div>
-            <div className="flex shrink-0 items-center">
+            <div className="md:flex hidden shrink-0 items-center">
               <Image
                 src="/optixchange-logo.png"
                 alt="test"
@@ -242,6 +267,32 @@ export default function Navbar() {
                 </div>
               </button>
             </div>
+            <Menu as="div" className="relative ml-3">
+              <div>
+                <MenuButton className="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                  <span className="absolute -inset-1.5" />
+                  <span className="sr-only">Open user menu</span>
+                  <img
+                    alt=""
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                    className="size-8 rounded-full"
+                  />
+                </MenuButton>
+              </div>
+              <MenuItems
+                transition
+                className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+              >
+                <MenuItem>
+                  <button
+                    onClick={handleLogout}
+                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
+                  >
+                    Sign out
+                  </button>
+                </MenuItem>
+              </MenuItems>
+            </Menu>
           </div>
         </div>
       </div>

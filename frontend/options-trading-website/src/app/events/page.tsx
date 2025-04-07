@@ -4,9 +4,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import Navbar from "@/components/Navbar";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { UserContext, UserContextType } from "@/context/UserContext";
 
 type EventDetails = {
   event: string;
@@ -18,10 +19,26 @@ type EventDetails = {
 
 export default function EventsScreen() {
   const [events, setEvents] = useState<EventDetails[]>([]);
+  const { setUserId }: UserContextType = useContext(UserContext);
 
   const API_URL = "https://optixchanges.com/api";
 
   const router = useRouter();
+
+  useEffect(() => {
+    fetch(API_URL + "/check-auth", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("auth check data:- ", data);
+        if (!data.authenticated) {
+          router.replace("/");
+        } else {
+          setUserId(data.user.userId);
+        }
+      });
+  }, []);
 
   useEffect(() => {
     async function fetchData() {

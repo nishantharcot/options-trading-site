@@ -5,7 +5,7 @@ function marketMakers() {
     async function temp() {
       try {
         // Create users
-        let res = await MarketMaker.getInstance().createUsers();
+        let res:any = await MarketMaker.getInstance().createUsers();
   
         // Add balance to all users
         res = await MarketMaker.getInstance().addBalanceToAllUsers();
@@ -14,7 +14,7 @@ function marketMakers() {
         res = await MarketMaker.getInstance().initializeEventsAndMintTokens();
   
         console.log("starting after initializeEventsAndMintTokens");
-        setInterval(MarketMaker.getInstance().placeOrderRandomly, 3000);
+        setInterval(MarketMaker.getInstance().placeOrderRandomly, 300);
       } catch(e) {
         console.log('error: ', e);
         startMarket();

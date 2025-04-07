@@ -2,7 +2,6 @@ import { RedisClientType, createClient } from "redis";
 import { API_TO_ENGINE_ORDER_TYPES, ENGINE_TO_API_RESPONSE_TYPES } from "./types";
 import uniqid from "uniqid";
 
-
 export class RedisManager {
   private client: RedisClientType
   private publisher: RedisClientType
@@ -12,11 +11,11 @@ export class RedisManager {
     this.client = createClient({
       url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
     });
-    this.client.connect()
+    this.client.connect();
     this.publisher = createClient({
       url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
     });
-    this.publisher.connect()
+    this.publisher.connect();
   }
 
   public static getInstance() {
@@ -43,5 +42,4 @@ export class RedisManager {
   public getRandomId() {
     return uniqid()
   }
-
 }
