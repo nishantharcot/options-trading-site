@@ -41,9 +41,9 @@ export const signUp = async (
   if (response.payload.token) {
     // console.log("yo man")
     res.cookie("authToken", response.payload.token, {
-      httpOnly: false,
-      secure: false,
-      sameSite: "lax",
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
     });
   }
 
@@ -72,9 +72,9 @@ export const signIn = async (
   if (response.payload.token) {
     // console.log("yo man")
     res.cookie("authToken", response.payload.token, {
-      // httpOnly: true,
-      // secure: true,
-      sameSite: "lax",
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
     });
   }
 
@@ -86,9 +86,9 @@ export const signOut = async (
   res: express.Response
 ) => {
   res.clearCookie("authToken", {
-    // httpOnly: true,
-    sameSite: "lax",
-    // secure: true,
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
   });
   res.json({ message: "Logged out successfully" });
 };

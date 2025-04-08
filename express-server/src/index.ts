@@ -13,13 +13,14 @@ dotenv.config();
 
 const app = express();
 
-const redisClient = createClient();
+const redisClient = createClient({
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+});
 
 app.use(cors({
-  origin: "http://localhost:3001",
+  origin: "https://optixchanges.com",
   credentials: true,
 }));
-
 
 app.use(cookieParser());
 
@@ -35,14 +36,8 @@ const routers = [
 routers.forEach(({ path, router }) => app.use(path, router));
 
 app.get("/api/check-auth", (req: any, res: any) => {
-  // console.log("req check:- ", req);
-
   const token = req.cookies.authToken;
-  console.log("token check:- ", token);
   if (!token) return res.status(401).json({ authenticated: false });
-
-
-  console.log("process.env.JWT_SECRET:- ", process.env.JWT_SECRET);
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET!);

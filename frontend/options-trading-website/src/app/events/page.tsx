@@ -21,7 +21,7 @@ export default function EventsScreen() {
   const [events, setEvents] = useState<EventDetails[]>([]);
   const { setUserId }: UserContextType = useContext(UserContext);
 
-  const API_URL = "http://localhost:3000/api";
+  const API_URL = "https://optixchanges.com/api";
 
   const router = useRouter();
 
