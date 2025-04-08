@@ -38,7 +38,7 @@ export default function Navbar() {
   const { userId, userBalance, setUserBalance }: UserContextType =
     useContext(UserContext);
 
-  const API_URL = "https://optixchanges.com/api";
+  const API_URL = "http://localhost:3000/api";
   const router = useRouter();
 
   const [refetch, setRefetch] = useState(true);

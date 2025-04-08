@@ -36,14 +36,14 @@ export const signUp = async (
   });
 
 
-  // console.log("response check:- ", response);
+  console.log("response check:- ", response);
 
   if (response.payload.token) {
     // console.log("yo man")
     res.cookie("authToken", response.payload.token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      httpOnly: false,
+      secure: false,
+      sameSite: "lax",
     });
   }
 
@@ -72,9 +72,9 @@ export const signIn = async (
   if (response.payload.token) {
     // console.log("yo man")
     res.cookie("authToken", response.payload.token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      // httpOnly: true,
+      // secure: true,
+      sameSite: "lax",
     });
   }
 
@@ -86,9 +86,9 @@ export const signOut = async (
   res: express.Response
 ) => {
   res.clearCookie("authToken", {
-    httpOnly: true,
-    sameSite: "none",
-    secure: true,
+    // httpOnly: true,
+    sameSite: "lax",
+    // secure: true,
   });
   res.json({ message: "Logged out successfully" });
 };

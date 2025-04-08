@@ -1,7 +1,10 @@
-const API_URL = process.env.API_URL
-
 import crypto from "crypto";
 import fs from "fs";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const API_URL = process.env.API_URL
 
 export class MarketMaker {
   private eventList: string[];
@@ -134,7 +137,7 @@ export class MarketMaker {
     return userCreate();
   }
 
-  public addBalanceToAllUsers() {
+  public addBalanceToAllUsers(amount: number) {
     const temp = async () => {
 
       const currentBalancesPromises = MarketMaker.getInstance().users.map((userId) => {
@@ -156,7 +159,7 @@ export class MarketMaker {
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-              amount: 10000000,
+              amount: amount,
               userId: userId,
             }),
           });
@@ -189,10 +192,6 @@ export class MarketMaker {
 
   public createEventAndMintTokens(event: string) {
     const newEvent = async () => {
-
-      const res = await MarketMaker.getInstance().addBalanceToAllUsers();
-      console.log("addBalanceToAllUsers:- ", res[0]);
-
       const deadline = new Date(Date.now() + 3 * 60 * 1000);
 
       const resJson = await fetch(
@@ -235,7 +234,12 @@ export class MarketMaker {
       );
 
       console.log("mintPromisesData:- ", mintPromisesData[0]);
-      return mintPromisesData;
+
+      MarketMaker.getInstance().eventList.push(event);
+      
+      const addBalanceData = await MarketMaker.getInstance().addBalanceToAllUsers(500000);
+
+      return addBalanceData;
     };
 
     return newEvent();
@@ -265,6 +269,7 @@ export class MarketMaker {
         const eventPromisesData = await Promise.all(
           eventPromisesJson.map((data) => data.json())
         );
+        console.log("eventPromisesData: ", eventPromisesData[0]);
       } catch (e) {
         console.log("eventPromises failed!!");
       }
@@ -297,7 +302,7 @@ export class MarketMaker {
         const mintPromisesData = await Promise.all(
           mintPromisesJson.map((data) => data.json())
         );
-        console.log("mintPromisesData:- ", mintPromisesData);
+        console.log("mintPromisesData:- ", mintPromisesData[0]);
       } catch (e) {
         console.log("mintPromisesJson failed!!");
       }
@@ -352,17 +357,31 @@ export class MarketMaker {
   }
 
   public placeOrderRandomly() {
-    const event = MarketMaker.getInstance().getRandomEvent();
+    let flag = 0;
+    let toBeDeleted;
+    for (const eve of MarketMaker.getInstance().eventList) {
+      if (
+        Date.now() >=
+        MarketMaker.getInstance().eventEndTimes.get(eve)!.getTime()
+      ) {
+        flag = 1;
+        toBeDeleted = eve;
+        setTimeout(() => {
+          MarketMaker.getInstance().createEventAndMintTokens(eve);
+        }, 1000);
+        break;
+      }
+    }
 
-    if (
-      Date.now() >=
-      MarketMaker.getInstance().eventEndTimes.get(event)!.getTime()
-    ) {
-      setTimeout(() => {
-        MarketMaker.getInstance().createEventAndMintTokens(event);
-      }, 1000);
+    if (toBeDeleted) {
+      const index = MarketMaker.getInstance().eventList.indexOf(toBeDeleted);
+      if (index !== -1) {
+        MarketMaker.getInstance().eventList.splice(index, 1);
+      }
       return;
     }
+
+    const event = MarketMaker.getInstance().getRandomEvent();
 
     const temp = async () => {
       const user = MarketMaker.getInstance().getRandomUser();
@@ -390,14 +409,6 @@ export class MarketMaker {
 
       console.log("res1Data:- ", res1Data);
 
-      if (res1Data.message.payload === "Insufficient INR balance") {
-        console.log("Recharging!");
-        MarketMaker.getInstance().addBalanceToUser(user);
-        return;
-      }
-
-      // Stock balance insufficient
-
       const res2Json = await fetch(API_URL + "/order/sell", {
         method: "POST",
         headers: {
@@ -417,10 +428,23 @@ export class MarketMaker {
 
       console.log("res2Data:- ", res2Data);
 
-      if (res2Data.message.payload === "Insufficient INR balance") {
-        console.log("Recharging!");
-        MarketMaker.getInstance().addBalanceToUser(user);
-      }
+      const lostAmount = 1000*quantity;
+
+      const resJson = await fetch(API_URL + "/onramp/inr", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: lostAmount,
+          userId: user,
+        }),
+      });
+
+      const resData = await resJson.json();
+
+      console.log("resData:- ", resData);
     };
 
     return temp();

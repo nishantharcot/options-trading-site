@@ -21,7 +21,7 @@ export default function EventsScreen() {
   const [events, setEvents] = useState<EventDetails[]>([]);
   const { setUserId }: UserContextType = useContext(UserContext);
 
-  const API_URL = "https://optixchanges.com/api";
+  const API_URL = "http://localhost:3000/api";
 
   const router = useRouter();
 
@@ -54,6 +54,8 @@ export default function EventsScreen() {
       }
 
       const temp: EventDetails[] = [];
+
+      console.log("orderbookData:- ", orderbookData);
 
       orderbookData.forEach((data: any) => {
         const eventName = data[0];
@@ -93,11 +95,13 @@ export default function EventsScreen() {
           }
         }
       });
+
+      console.log("temp check:- ", temp);
+
       setEvents(temp);
-      console.log("events check:- ", events);
       const interval = setInterval(() => {
-        setEvents((events) => {
-          return events.filter((data) => {
+        setEvents((temp) => {
+          return temp.filter((data) => {
             const diff =
               new Date(data.endTime).getTime() - new Date().getTime();
             if (diff > 0) {

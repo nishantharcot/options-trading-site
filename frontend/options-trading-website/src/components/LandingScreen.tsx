@@ -11,7 +11,7 @@ import { UserContext, UserContextType } from "@/context/UserContext";
 export default function LandingScreen() {
   const router = useRouter();
 
-  const API_URL = "https://optixchanges.com/api";
+  const API_URL = "http://localhost:3000/api";
 
   const [isError] = useState(false);
 

@@ -1,4 +1,7 @@
 import { MarketMaker } from "./MarketMaker";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 function marketMakers() {
   function startMarket() {
@@ -8,7 +11,7 @@ function marketMakers() {
         let res:any = await MarketMaker.getInstance().createUsers();
   
         // Add balance to all users
-        res = await MarketMaker.getInstance().addBalanceToAllUsers();
+        res = await MarketMaker.getInstance().addBalanceToAllUsers(10000000);
   
         // initializeEventsAndMintTokens
         res = await MarketMaker.getInstance().initializeEventsAndMintTokens();

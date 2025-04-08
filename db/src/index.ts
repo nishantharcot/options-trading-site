@@ -27,15 +27,9 @@ import fs from "fs";
 
 dotenv.config();
 
-const redisClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-})
-const pubClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-})
-const subClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-})
+const redisClient = createClient()
+const pubClient = createClient()
+const subClient = createClient()
 
 
 const STATE = {
@@ -96,6 +90,50 @@ async function saveToDb() {
   pubClient.publish("archiver:ack", "sync-complete");
 }
 
+async function loadStateFromSnapshots() {
+  console.log("Loading snapshots from local file system...");
+
+  // Load Order Book
+  if (fs.existsSync("order_book_snapshot.json")) {
+    const raw = fs.readFileSync("order_book_snapshot.json", "utf-8");
+    const deserialized = deserializeOrderBook(raw);
+    STATE.ORDERBOOK = orderBookToMongoose(deserialized);
+    console.log("Loaded order book snapshot.");
+  }
+
+  // Load INR Balances
+  if (fs.existsSync("inr_balances_snapshot.json")) {
+    const raw = fs.readFileSync("inr_balances_snapshot.json", "utf-8");
+    const deserialized = deserializeInrBalances(raw);
+    STATE.INR_BALANCES = inrBalancesToMongoose(deserialized);
+    console.log("Loaded INR balances snapshot.");
+  }
+
+  // Load Stock Balances
+  if (fs.existsSync("stock_balances_snapshot.json")) {
+    const raw = fs.readFileSync("stock_balances_snapshot.json", "utf-8");
+    const deserialized = deserializeStockBalances(raw);
+    STATE.STOCK_BALANCES = stockBalancesToMongoose(deserialized);
+    console.log("Loaded stock balances snapshot.");
+  }
+
+  // Load Order Queues
+  if (fs.existsSync("order_queues_snapshot.json")) {
+    const raw = fs.readFileSync("order_queues_snapshot.json", "utf-8");
+    const deserialized = deserializeOrderQueues(raw);
+    STATE.ORDER_QUEUES = orderQueuesToMongoose(deserialized);
+    console.log("Loaded order queues snapshot.");
+  }
+
+  // Load Stock End Times
+  if (fs.existsSync("stock_endtimes_snapshot.json")) {
+    const raw = fs.readFileSync("stock_endtimes_snapshot.json", "utf-8");
+    const deserialized = deserializeStockEndTimes(raw);
+    STATE.STOCK_END_TIMES = stockEndTimesToMongoose(deserialized);
+    console.log("Loaded stock endtimes snapshot.");
+  }
+}
+
 async function main() {
   try {
     await redisClient.connect();
@@ -105,6 +143,8 @@ async function main() {
     await mongoose.connect(process.env.MONGO_URL || "");
   
     console.log("connected to DB");
+
+    await loadStateFromSnapshots();
 
     await subClient.subscribe("sync:db", async (message) => {
       const data = JSON.parse(message);
@@ -117,102 +157,61 @@ async function main() {
     setInterval(saveToDb, 10*60*1000);
   
     while (true) {
-      const responseOrderBook = await redisClient.brPop("db_server:orderbook", 0);
-      const responseInrBalances = await redisClient.brPop(
-        "db_server:inr_balances",
+
+      const response = await redisClient.brPop(
+        [
+          "db_server:orderbook",
+          "db_server:inr_balances",
+          "db_server:stock_balances",
+          "db_server:order_queues",
+          "db_server:stock_endtimes",
+        ],
         0
       );
-      const responseStockBalances = await redisClient.brPop(
-        "db_server:stock_balances",
-        0
-      );
-  
-      const responseOrderQueues = await redisClient.brPop(
-        "db_server:order_queues",
-        0
-      );
-  
-      const responseStockEndTimes = await redisClient.brPop(
-        "db_server:stock_endtimes",
-        0
-      );
-  
-      if (responseOrderBook?.element) {
-        fs.writeFile(
-          "order_book_snapshot.json",
-          responseOrderBook?.element,
-          (err) => {
-            if (err) console.error("Error writing snapshot:", err);
-          }
-        );
-  
-        const res = deserializeOrderBook(responseOrderBook.element);
-  
-        STATE.ORDERBOOK = orderBookToMongoose(res);
-  
-        // saveOrderbookToDb();
-      }
-  
-      if (responseInrBalances?.element) {
-        fs.writeFile(
-          "inr_balances_snapshot.json",
-          responseInrBalances.element,
-          (err) => {
-            if (err) console.error("Error writing snapshot:", err);
-          }
-        );
-  
-        const res = deserializeInrBalances(responseInrBalances.element);
-  
-        STATE.INR_BALANCES = inrBalancesToMongoose(res);
-      }
-  
-      if (responseStockBalances?.element) {
-        fs.writeFile(
-          "stock_balances_snapshot.json",
-          responseStockBalances.element,
-          (err) => {
-            if (err) console.error("Error writing snapshot:", err);
-          }
-        );
-  
-        const res = deserializeStockBalances(responseStockBalances.element);
-  
-        STATE.STOCK_BALANCES = stockBalancesToMongoose(res);
-  
-        // saveStockBalancesToDb();
-      }
-  
-      if (responseOrderQueues?.element) {
-        fs.writeFile(
-          "order_queues_snapshot.json",
-          responseOrderQueues.element,
-          (err) => {
-            if (err) console.error("Error writing snapshot:", err);
-          }
-        );
-  
-        const res = deserializeOrderQueues(responseOrderQueues.element);
-  
-        STATE.ORDER_QUEUES = orderQueuesToMongoose(res);
-  
-        // saveOrderQueuesToDb();
-      }
-  
-      if (responseStockEndTimes?.element) {
-        fs.writeFile(
-          "stock_endtimes_snapshot.json",
-          responseStockEndTimes.element,
-          (err) => {
-            if (err) console.error("Error writing snapshot:", err);
-          }
-        );
-  
-        const res = deserializeStockEndTimes(responseStockEndTimes.element);
-  
-        STATE.STOCK_END_TIMES = stockEndTimesToMongoose(res);
-  
-        // saveStockEndTimesToDb();
+
+      if (!response?.element) continue;
+
+      const { key, element } = response;
+      
+      switch (key) {
+        case "db_server:orderbook":
+          fs.writeFile("order_book_snapshot.json", element, (err) => {
+            if (err) console.error("Error writing order book snapshot:", err);
+          });
+          STATE.ORDERBOOK = orderBookToMongoose(deserializeOrderBook(element));
+          break;
+    
+        case "db_server:inr_balances":
+          fs.writeFile("inr_balances_snapshot.json", element, (err) => {
+            if (err) console.error("Error writing INR balances snapshot:", err);
+          });
+          STATE.INR_BALANCES = inrBalancesToMongoose(deserializeInrBalances(element));
+          break;
+    
+        case "db_server:stock_balances":
+          fs.writeFile("stock_balances_snapshot.json", element, (err) => {
+            if (err) console.error("Error writing stock balances snapshot:", err);
+          });
+          STATE.STOCK_BALANCES = stockBalancesToMongoose(deserializeStockBalances(element));
+          break;
+    
+        case "db_server:order_queues":
+          fs.writeFile("order_queues_snapshot.json", element, (err) => {
+            if (err) console.error("Error writing order queues snapshot:", err);
+          });
+          STATE.ORDER_QUEUES = orderQueuesToMongoose(deserializeOrderQueues(element));
+          break;
+    
+        case "db_server:stock_endtimes":
+          fs.writeFile("stock_endtimes_snapshot.json", element, (err) => {
+            if (err) console.error("Error writing stock endtimes snapshot:", err);
+          });
+          STATE.STOCK_END_TIMES = stockEndTimesToMongoose(deserializeStockEndTimes(element));
+          break;
+    
+        default:
+          console.warn("Unhandled key:", key);
+          break;
       }
     }
 

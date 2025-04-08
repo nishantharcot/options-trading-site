@@ -22,12 +22,16 @@ import { User } from "./schema/users";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const redisClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-})
-const pubsubClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-})
+const redisClient = createClient()
+const pubsubClient = createClient()
+
+const marketMakerUsers: Map<string, number> = new Map();
+
+for (let i = 0; i < 100; i++) {
+  const user = `mm${i}`;
+
+  marketMakerUsers.set(user, 1);
+}
 
 async function publishEvents({ stockSymbol }: { stockSymbol: string }) {
   if (ORDERBOOK.has(stockSymbol)) {
@@ -103,6 +107,21 @@ async function processSubmission({
         // console.log("userExists:- ", userExists);
       
         if (userExists) {
+          if (!INR_BALANCES.has(userId)) {
+            INR_BALANCES.set(userId, { balance: 0, locked: 0 });
+            STOCK_BALANCES.set(userId, new Map());
+  
+            for (const [key, order] of ORDERBOOK) {
+              const res = STOCK_BALANCES.get(userId);
+              if (res) {
+                res.set(key, {
+                  yes: { quantity: 0, locked: 0 },
+                  no: { quantity: 0, locked: 0 },
+                });
+              }
+            }
+          }
+
           RedisManager.getInstance().sendToApi(clientID, {
             type: "REQUEST_FAILED",
             payload: {
@@ -117,6 +136,8 @@ async function processSubmission({
 
 
         // console.log("token check:- ", process.env.JWT_SECRET);
+
+        console.log("process.env.JWT_SECRET:- ", process.env.JWT_SECRET);
 
         // Generate JWT token
         const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!);
@@ -1150,6 +1171,11 @@ const handleEventEnd = (event: string) => {
     let currentBalance = INR_BALANCES.get(userId)!.balance;
     let locked = INR_BALANCES.get(userId)!.locked;
 
+    if (marketMakerUsers.has(userId)) {
+      INR_BALANCES.set(userId, { balance: currentBalance, locked: locked-(quantity * price) });
+      return;
+    }
+
     currentBalance += quantity * price;
     locked -= quantity * price;
     INR_BALANCES.set(userId, { balance: currentBalance, locked: locked });
@@ -1169,6 +1195,10 @@ const handleEventEnd = (event: string) => {
   ORDERBOOK.delete(event);
 
   for (const [user, eventObject] of STOCK_BALANCES) {
+
+    if (marketMakerUsers.has(user)) {
+      continue;
+    }
 
     if (eventObject.has(event)) {
 

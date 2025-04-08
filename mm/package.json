@@ -11,5 +11,8 @@
   "description": "",
   "devDependencies": {
     "@types/node": "^22.13.13"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
   }
 }

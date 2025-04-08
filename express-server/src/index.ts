@@ -7,18 +7,18 @@ import getRouter from "./routes/getRoutes";
 import stockRouter from "./routes/stockRoutes";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
-const redisClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-});
+const redisClient = createClient();
 
 app.use(cors({
-  origin: "https://optixchanges.com",
+  origin: "http://localhost:3001",
   credentials: true,
 }));
-
 
 
 app.use(cookieParser());
@@ -35,8 +35,14 @@ const routers = [
 routers.forEach(({ path, router }) => app.use(path, router));
 
 app.get("/api/check-auth", (req: any, res: any) => {
+  // console.log("req check:- ", req);
+
   const token = req.cookies.authToken;
+  console.log("token check:- ", token);
   if (!token) return res.status(401).json({ authenticated: false });
+
+
+  console.log("process.env.JWT_SECRET:- ", process.env.JWT_SECRET);
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET!);
