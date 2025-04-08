@@ -36,7 +36,7 @@ export const signUp = async (
   });
 
 
-  console.log("response check:- ", response);
+  // console.log("response check:- ", response);
 
   if (response.payload.token) {
     // console.log("yo man")
@@ -59,7 +59,7 @@ export const signIn = async (
 ) => {
   const { userId, password } = req.body;
 
-  console.log("userId check:- ", userId);
+  // console.log("userId check:- ", userId);
 
   const response = await RedisManager.getInstance().sendAndAwait({
     type: "SIGNIN",

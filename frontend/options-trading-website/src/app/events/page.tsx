@@ -55,7 +55,7 @@ export default function EventsScreen() {
 
       const temp: EventDetails[] = [];
 
-      console.log("orderbookData:- ", orderbookData);
+      // console.log("orderbookData:- ", orderbookData);
 
       orderbookData.forEach((data: any) => {
         const eventName = data[0];
@@ -96,7 +96,7 @@ export default function EventsScreen() {
         }
       });
 
-      console.log("temp check:- ", temp);
+      // console.log("temp check:- ", temp);
 
       setEvents(temp);
       const interval = setInterval(() => {

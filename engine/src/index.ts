@@ -141,7 +141,7 @@ async function processSubmission({
 
         // console.log("token check:- ", process.env.JWT_SECRET);
 
-        console.log("process.env.JWT_SECRET:- ", process.env.JWT_SECRET);
+        // console.log("process.env.JWT_SECRET:- ", process.env.JWT_SECRET);
 
         // Generate JWT token
         const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET!);

@@ -96,7 +96,7 @@ export class MarketMaker {
         MarketMaker.getInstance().tokens.set(user, userData[i]);
       });
 
-      console.log("userData check:- ", userData[0]);
+      // console.log("userData check:- ", userData[0]);
 
       // SignOut users
       const userPromises2 = MarketMaker.getInstance().users.map((user) =>
@@ -112,7 +112,7 @@ export class MarketMaker {
       const userJson2 = await Promise.all(userPromises2);
       const userData2 = await Promise.all(userJson2.map((data) => data.json()));
 
-      console.log("userData2: ", userData2[0]);
+      // console.log("userData2: ", userData2[0]);
 
       // SignIn users
       const userPromises3 = MarketMaker.getInstance().users.map((user) => {
@@ -131,7 +131,7 @@ export class MarketMaker {
         MarketMaker.getInstance().tokens.set(user, userData3[index].token);
       });
 
-      console.log("userData3: ", userData3[0]);
+      // console.log("userData3: ", userData3[0]);
     };
 
     return userCreate();
@@ -147,7 +147,7 @@ export class MarketMaker {
       const currentBalancesJson = await Promise.all(currentBalancesPromises);
       const currentBalancesData = await Promise.all(currentBalancesJson.map(data => data.json()));
 
-      console.log("currentBalancesData:- ", currentBalancesData);
+      // console.log("currentBalancesData:- ", currentBalancesData);
 
       const onrampPromises = MarketMaker.getInstance().users.map((userId, index) => {
         const token = MarketMaker.getInstance().tokens.get(userId);
@@ -177,7 +177,7 @@ export class MarketMaker {
           })
         );
 
-        console.log("onrampData:- ", onrampData);
+        // console.log("onrampData:- ", onrampData);
 
         return onrampData;
       } catch (e) {
@@ -233,7 +233,7 @@ export class MarketMaker {
         mintPromisesJson.map((data) => data.json())
       );
 
-      console.log("mintPromisesData:- ", mintPromisesData[0]);
+      // console.log("mintPromisesData:- ", mintPromisesData[0]);
 
       MarketMaker.getInstance().eventList.push(event);
       
@@ -269,7 +269,7 @@ export class MarketMaker {
         const eventPromisesData = await Promise.all(
           eventPromisesJson.map((data) => data.json())
         );
-        console.log("eventPromisesData: ", eventPromisesData[0]);
+        // console.log("eventPromisesData: ", eventPromisesData[0]);
       } catch (e) {
         console.log("eventPromises failed!!");
       }
@@ -302,7 +302,7 @@ export class MarketMaker {
         const mintPromisesData = await Promise.all(
           mintPromisesJson.map((data) => data.json())
         );
-        console.log("mintPromisesData:- ", mintPromisesData[0]);
+        // console.log("mintPromisesData:- ", mintPromisesData[0]);
       } catch (e) {
         console.log("mintPromisesJson failed!!");
       }
@@ -407,7 +407,7 @@ export class MarketMaker {
 
       const res1Data = await res1Json.json();
 
-      console.log("res1Data:- ", res1Data);
+      // console.log("res1Data:- ", res1Data);
 
       const res2Json = await fetch(API_URL + "/order/sell", {
         method: "POST",
@@ -426,7 +426,7 @@ export class MarketMaker {
 
       const res2Data = await res2Json.json();
 
-      console.log("res2Data:- ", res2Data);
+      // console.log("res2Data:- ", res2Data);
 
       const lostAmount = 1000*quantity;
 
@@ -444,7 +444,7 @@ export class MarketMaker {
 
       const resData = await resJson.json();
 
-      console.log("resData:- ", resData);
+      // console.log("resData:- ", resData);
     };
 
     return temp();
