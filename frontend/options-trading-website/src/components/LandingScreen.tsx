@@ -11,7 +11,10 @@ import { UserContext, UserContextType } from "@/context/UserContext";
 export default function LandingScreen() {
   const router = useRouter();
 
-  console.log("process.env check:- ", process.env);
+  console.log(
+    "process.env NEXT_PUBLIC_API_URL:- ",
+    process.env.NEXT_PUBLIC_API_URL
+  );
 
   const API_URL = "https://optixchanges.com/api";
 
