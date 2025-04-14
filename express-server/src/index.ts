@@ -13,6 +13,9 @@ dotenv.config();
 
 const app = express();
 
+
+console.log("process.env check:- ", process.env);
+
 const redisClient = process.env.NODE_ENV === "production"
   ? createClient({
       url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,

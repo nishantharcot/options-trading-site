@@ -14,14 +14,9 @@ spec:
     spec:
       containers:
         - name: frontend
-          volumeMounts:
-            - name: env-volume
-              mountPath: /app/.env
-              subPath: .env
           image: nsharc4/frontend-optixchange:latest
           ports:
             - containerPort: 3000
-      volumes:
-        - name: env-volume
-          configMap:
-            name: frontend-config
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: "http://express-server:3000/api"

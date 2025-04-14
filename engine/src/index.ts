@@ -22,6 +22,8 @@ import { User } from "./schema/users";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+console.log("process.env check:- ", process.env);
+
 const redisClient = process.env.NODE_ENV === "production"
   ? createClient({
       url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,

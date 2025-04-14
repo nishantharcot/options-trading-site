@@ -11,6 +11,8 @@ import { UserContext, UserContextType } from "@/context/UserContext";
 export default function LandingScreen() {
   const router = useRouter();
 
+  console.log("process.env check:- ", process.env);
+
   const API_URL = "https://optixchanges.com/api";
 
   const [isError] = useState(false);

@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+console.log("process.env check:- ", process.env);
+
 function marketMakers() {
   function startMarket() {
     async function temp() {
