@@ -18,7 +18,9 @@ jobs:
       # Build and Push Frontend Image
       - name: Build & Push Frontend
         run: |
-          docker build -t nsharc4/frontend-optixchange:latest ./frontend/options-trading-website
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=http://express-server:3000/api \
+            -t nsharc4/frontend-optixchange:latest ./frontend/options-trading-website
           docker push nsharc4/frontend-optixchange:latest
 
       # Build and Push Express Server Image
