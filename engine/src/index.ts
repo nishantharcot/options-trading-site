@@ -22,12 +22,16 @@ import { User } from "./schema/users";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const redisClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-})
-const pubsubClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-})
+const redisClient = process.env.NODE_ENV === "production"
+  ? createClient({
+      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    })
+  : createClient();
+const pubsubClient = process.env.NODE_ENV === "production"
+  ? createClient({
+      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    })
+  : createClient();
 
 const marketMakerUsers: Map<string, number> = new Map();
 

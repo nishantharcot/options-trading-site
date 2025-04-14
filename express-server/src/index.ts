@@ -13,9 +13,11 @@ dotenv.config();
 
 const app = express();
 
-const redisClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-});
+const redisClient = process.env.NODE_ENV === "production"
+  ? createClient({
+      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    })
+  : createClient();
 
 app.use(cors({
   origin: "https://optixchanges.com",
@@ -48,7 +50,7 @@ app.get("/api/check-auth", (req: any, res: any) => {
   }
 });
 
-console.log("Express server code reached!!!")
+console.log("Latest dep check: Express server code reached!!!")
 
 async function startServer() {
   console.log("Reaching here!!!")

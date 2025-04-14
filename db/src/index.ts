@@ -27,15 +27,21 @@ import fs from "fs";
 
 dotenv.config();
 
-const redisClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-})
-const pubClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-})
-const subClient = createClient({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-})
+const redisClient = process.env.NODE_ENV === "production"
+  ? createClient({
+      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    })
+  : createClient();
+const pubClient = process.env.NODE_ENV === "production"
+? createClient({
+    url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+  })
+: createClient();
+const subClient = process.env.NODE_ENV === "production"
+? createClient({
+    url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+  })
+: createClient();
 
 
 const STATE = {

@@ -35,3 +35,5 @@ spec:
                   key: REDIS_PORT
             - name: JWT_SECRET
               value: "randomyoyo"
+            - name: NODE_ENV
+              value: "production"

@@ -7,9 +7,11 @@ export class RedisManager {
   private static instance: RedisManager;
 
   private constructor() {
-    this.client = createClient({
-      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-    })
+    this.client = process.env.NODE_ENV === "production"
+    ? createClient({
+        url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+      })
+    : createClient();
     this.client.connect();
   }
 
