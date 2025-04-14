@@ -7,16 +7,10 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useContext, useEffect, useState } from "react";
 import { XCircleIcon } from "@heroicons/react/20/solid";
 import { UserContext, UserContextType } from "@/context/UserContext";
+import { API_URL } from "@/config";
 
 export default function LandingScreen() {
   const router = useRouter();
-
-  console.log(
-    "process.env NEXT_PUBLIC_API_URL:- ",
-    process.env.NEXT_PUBLIC_API_URL
-  );
-
-  const API_URL = "https://optixchanges.com/api";
 
   const [isError] = useState(false);
 
