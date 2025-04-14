@@ -35,3 +35,10 @@ spec:
                   key: REDIS_PORT
             - name: NODE_ENV
               value: "production"
+          volumeMounts:
+            - name: snapshot-storage
+              mountPath: /app/snapshots
+      volumes:
+        - name: snapshot-storage
+          persistentVolumeClaim:
+            claimName: db-snapshots-pvc
