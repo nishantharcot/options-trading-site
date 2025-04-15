@@ -188,7 +188,7 @@ export class MarketMaker {
 
   public createEventAndMintTokens(event: string) {
     const newEvent = async () => {
-      const deadline = new Date(Date.now() + 4.5 * 60 * 1000);
+      const deadline = new Date(Date.now() + 5 * 60 * 1000);
 
       const resJson = await fetch(
         API_URL + `/symbol/create/${encodeURIComponent(event)}`,
@@ -362,9 +362,6 @@ export class MarketMaker {
       ) {
         flag = 1;
         toBeDeleted = eve;
-        setTimeout(() => {
-          MarketMaker.getInstance().createEventAndMintTokens(eve);
-        }, 1000);
         break;
       }
     }
@@ -374,7 +371,9 @@ export class MarketMaker {
       if (index !== -1) {
         MarketMaker.getInstance().eventList.splice(index, 1);
       }
-      return;
+      setTimeout(() => {
+        MarketMaker.getInstance().createEventAndMintTokens(toBeDeleted);
+      }, 1000)
     }
 
     const event = MarketMaker.getInstance().getRandomEvent();
