@@ -21,19 +21,10 @@ import { initData } from "./data";
 import { User } from "./schema/users";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { redisUrl } from "./config";
 
-console.log("process.env check:- ", process.env);
-
-const redisClient = process.env.NODE_ENV === "production"
-  ? createClient({
-      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-    })
-  : createClient();
-const pubsubClient = process.env.NODE_ENV === "production"
-  ? createClient({
-      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-    })
-  : createClient();
+const redisClient = createClient({ url: redisUrl });
+const pubsubClient = createClient({ url: redisUrl });
 
 const marketMakerUsers: Map<string, number> = new Map();
 
@@ -218,7 +209,7 @@ async function processSubmission({
             RedisManager.getInstance().sendToApi(clientID, {
               type: "REQUEST_FAILED",
               payload: {
-                message: "Invalid credentials",
+                message: "Incorrect Password",
               },
             });
             break;

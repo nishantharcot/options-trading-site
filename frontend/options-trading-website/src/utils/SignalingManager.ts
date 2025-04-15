@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+import { WS_URL } from "@/config";
 
 export class SignalingManager {
   private static instance: SignalingManager;
@@ -10,7 +10,7 @@ export class SignalingManager {
   private callbacks: any = {};
 
   private constructor() {
-    this.ws = new WebSocket("wss://optixchanges.com/ws");
+    this.ws = new WebSocket(WS_URL);
     this.id = 1;
     this.bufferedMessages = [];
     this.init();

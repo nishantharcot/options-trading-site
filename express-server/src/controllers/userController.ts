@@ -1,6 +1,8 @@
 import { RedisManager } from "../RedisManager.js";
 import express from "express";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const createUser = async (
   req: express.Request,
   res: express.Response
@@ -41,9 +43,9 @@ export const signUp = async (
   if (response.payload.token) {
     // console.log("yo man")
     res.cookie("authToken", response.payload.token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      httpOnly: isProduction,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
     });
   }
 
@@ -72,9 +74,9 @@ export const signIn = async (
   if (response.payload.token) {
     // console.log("yo man")
     res.cookie("authToken", response.payload.token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      httpOnly: isProduction,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
     });
   }
 

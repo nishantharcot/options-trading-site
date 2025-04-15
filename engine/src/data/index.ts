@@ -6,8 +6,6 @@ import { StockBalancesModel } from "../schema/stockbalances";
 import { StockEndTimeModel } from "../schema/stockendtimes";
 import { OrderQueuesModel } from "../schema/orderqueues";
 import { deserializeOrderBook, deserializeOrderQueues, deserializeStockBalances, deserializeStockEndTimes, deserializeUserBalances } from "../utils";
-import dotenv from "dotenv";
-dotenv.config();
 
 export type UserBalance = {
   balance: number;
@@ -77,7 +75,7 @@ export const ORDER_QUEUES: OrderQueues = {
 
 export async function initData() {
 
-  await mongoose.connect(process.env.MONGO_URL || "");
+  await mongoose.connect(process.env.MONGO_URL!);
 
   console.log("connected to DB");
 

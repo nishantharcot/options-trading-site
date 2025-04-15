@@ -12,11 +12,14 @@ import { API_URL } from "@/config";
 export default function LandingScreen() {
   const router = useRouter();
 
-  const [isError] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [currentText, setCurrentText] = useState("Not a member?");
   const [currentMode, setCurrentMode] = useState("Sign in");
   const [oppMode, setOppMode] = useState("Sign up");
+
+  console.log("API URL:- ", API_URL);
 
   const { setUserId }: UserContextType = useContext(UserContext);
 
@@ -44,8 +47,12 @@ export default function LandingScreen() {
             setUserId(userId);
           }
 
-          console.log("finalRes:- ", finalRes);
-          router.push("/events");
+          if (finalRes?.token) {
+            router.push("/events");
+          } else {
+            setIsError(true);
+            setErrorMessage(finalRes.message);
+          }
         });
     } else {
       fetch(`${API_URL}/signin`, {
@@ -60,8 +67,14 @@ export default function LandingScreen() {
           if (userId) {
             setUserId(userId);
           }
+
+          if (finalRes?.token) {
+            router.push("/events");
+          } else {
+            setIsError(true);
+            setErrorMessage(finalRes.message);
+          }
           console.log("finalRes:- ", finalRes);
-          router.push("/events");
         });
     }
   };
@@ -149,7 +162,7 @@ export default function LandingScreen() {
                       </div>
                       <div className="ml-3">
                         <h3 className="text-sm font-medium text-red-800">
-                          User Id already exists! Please choose a new one
+                          {errorMessage}
                         </h3>
                       </div>
                     </div>

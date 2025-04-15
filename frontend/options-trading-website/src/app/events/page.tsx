@@ -8,6 +8,7 @@ import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { UserContext, UserContextType } from "@/context/UserContext";
+import { API_URL } from "@/config";
 
 type EventDetails = {
   event: string;
@@ -20,8 +21,6 @@ type EventDetails = {
 export default function EventsScreen() {
   const [events, setEvents] = useState<EventDetails[]>([]);
   const { setUserId }: UserContextType = useContext(UserContext);
-
-  const API_URL = "https://optixchanges.com/api";
 
   const router = useRouter();
 

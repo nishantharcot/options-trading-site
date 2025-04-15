@@ -13,9 +13,14 @@ RUN npm ci
 # Copy the rest of the application
 COPY . .
 
-# Set environment variable
+
+# Accept build-time environment variables
 ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_WS_URL
+
+# Make them available to Next.js during build
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
 
 # Build the Next.js application
 RUN npm run build

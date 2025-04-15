@@ -20,6 +20,7 @@ jobs:
         run: |
           docker build \
             --build-arg NEXT_PUBLIC_API_URL=https://optixchanges.com/api \
+            --build-arg NEXT_PUBLIC_WS_URL=wss://optixchanges.com/ws \
             -t nsharc4/frontend-optixchange:latest ./frontend/options-trading-website
           docker push nsharc4/frontend-optixchange:latest
 

@@ -1,10 +1,6 @@
 import crypto from "crypto";
 import fs from "fs";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const API_URL = process.env.API_URL
+import { API_URL } from "./config";
 
 export class MarketMaker {
   private eventList: string[];

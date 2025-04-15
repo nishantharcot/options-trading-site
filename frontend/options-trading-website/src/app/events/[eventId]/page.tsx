@@ -21,6 +21,7 @@ import { sortByPrice } from "@/utils/helperFunctions";
 import { Transition } from "@headlessui/react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { API_URL } from "@/config";
 
 type orderbookData = {
   price: number;
@@ -31,8 +32,6 @@ export default function EventDetailsScreen() {
   const { eventId }: { eventId: string } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  const API_URL = "https://optixchanges.com/api";
 
   const [endTime] = useState(searchParams.get("endTime"));
   const [timeLeft, setTimeLeft] = useState("");

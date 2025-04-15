@@ -1,9 +1,5 @@
 import { MarketMaker } from "./MarketMaker";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-console.log("process.env check:- ", process.env);
+import { API_URL } from "./config";
 
 function marketMakers() {
   function startMarket() {

@@ -7,23 +7,14 @@ import getRouter from "./routes/getRoutes";
 import stockRouter from "./routes/stockRoutes";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { redisUrl, isProduction } from "./config";
 
 const app = express();
 
-
-console.log("process.env check:- ", process.env);
-
-const redisClient = process.env.NODE_ENV === "production"
-  ? createClient({
-      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-    })
-  : createClient();
+const redisClient = createClient({ url: redisUrl });
 
 app.use(cors({
-  origin: "https://optixchanges.com",
+  origin: isProduction ? "https://optixchanges.com" : "http://localhost:3001",
   credentials: true,
 }));
 

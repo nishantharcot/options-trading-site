@@ -1,17 +1,15 @@
 import { createClient, RedisClientType } from "redis";
 import { MessageToApi } from "./types/toApi";
 import { OrderBookForEvent } from "./types/toWs";
+import { redisUrl } from "./config";
+
 
 export class RedisManager {
   private client: RedisClientType;
   private static instance: RedisManager;
 
   private constructor() {
-    this.client = process.env.NODE_ENV === "production"
-    ? createClient({
-        url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-      })
-    : createClient();
+    this.client = createClient({ url: redisUrl });
     this.client.connect();
   }
 
