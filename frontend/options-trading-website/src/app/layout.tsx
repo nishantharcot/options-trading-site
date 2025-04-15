@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Optixchanges: India's Leading Online Skill Gaming Platform",
   description: "Predict Events and win",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

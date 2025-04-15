@@ -246,10 +246,11 @@ export default function Navbar() {
             </div>
             <div className="md:flex hidden shrink-0 items-center">
               <Image
-                src="/optixchange-logo.png"
+                onClick={() => router.push("/events")}
+                src="/optixchanges-logo.png"
                 alt="test"
-                width={200}
-                height={200}
+                width={210}
+                height={50}
               />
             </div>
             <div className="hidden md:ml-6 md:flex md:space-x-8">
@@ -324,7 +325,7 @@ export default function Navbar() {
 
       <DisclosurePanel className="md:hidden">
         <div className="space-y-1 pb-3 pt-2">
-          <DisclosureButton
+          {/* <DisclosureButton
             as="a"
             href="#"
             className="block border-l-4 border-indigo-500 bg-indigo-50 py-2 pl-3 pr-4 text-base font-medium text-indigo-700 sm:pl-5 sm:pr-6"
@@ -338,7 +339,7 @@ export default function Navbar() {
                 Create an Event
               </button>
             </form>
-          </DisclosureButton>
+          </DisclosureButton> */}
           <DisclosureButton
             as="a"
             href="#"

@@ -1,7 +1,6 @@
 import { RedisManager } from "../RedisManager.js";
 import express from "express";
-
-const isProduction = process.env.NODE_ENV === "production";
+import { isProduction } from "../config.js";
 
 export const createUser = async (
   req: express.Request,

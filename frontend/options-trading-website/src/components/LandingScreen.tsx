@@ -99,10 +99,10 @@ export default function LandingScreen() {
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div>
             <Image
-              src="/optixchange-logo.png"
+              src="/optixchanges-logo.png"
               alt="test"
-              height={200}
-              width={200}
+              height={300}
+              width={1260}
             />
           </div>
 
