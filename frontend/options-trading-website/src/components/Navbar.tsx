@@ -177,10 +177,6 @@ export default function Navbar() {
     }
   };
 
-  const createEventClick = () => {
-    setEventOpen(true);
-  };
-
   const createEvent = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
