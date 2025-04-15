@@ -719,7 +719,7 @@ async function processSubmission({
           RedisManager.getInstance().sendToApi(clientID, {
             type: "SELL",
             payload: {
-              message: "Stock balance insufficient",
+              message: "Stock balance Insufficient",
             },
           });
           break;

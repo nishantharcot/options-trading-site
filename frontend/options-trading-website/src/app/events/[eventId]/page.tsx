@@ -44,6 +44,9 @@ export default function EventDetailsScreen() {
   const [noData, setNoData] = useState<orderbookData[]>();
   const [yesData, setYesData] = useState<orderbookData[]>();
 
+  const [yesTotalQuantity, setYesTotalQuantity] = useState(0);
+  const [noTotalQuantity, setNoTotalQuantity] = useState(0);
+
   const orderTypes = ["Buy", "Sell"];
 
   const [orderType, setOrderType] = useState("Buy");
@@ -149,11 +152,15 @@ export default function EventDetailsScreen() {
         const noDataArr: orderbookData[] = [];
         const yesDataArr: orderbookData[] = [];
 
+        let noTotal = 0;
+        let yesTotal = 0;
+
         Object.entries(res2[0].no).forEach((data: any[]) => {
           noDataArr.push({
             price: Number(data[0]),
             quantity: Number(data[1].total),
           });
+          noTotal += Number(data[1].total);
         });
 
         Object.entries(res2[0].yes).forEach((data: any[]) => {
@@ -161,8 +168,11 @@ export default function EventDetailsScreen() {
             price: Number(data[0]),
             quantity: Number(data[1].total),
           });
+          yesTotal += Number(data[1].total);
         });
 
+        setYesTotalQuantity(yesTotal);
+        setNoTotalQuantity(noTotal);
         setNoData(sortByPrice(noDataArr));
         setYesData(sortByPrice(yesDataArr));
       } catch (e) {
@@ -178,6 +188,9 @@ export default function EventDetailsScreen() {
         const yesArray = [];
         const noArray = [];
 
+        let noTotal = 0;
+        let yesTotal = 0;
+
         for (const stockType of ["yes", "no"] as const) {
           if (!orderbook[stockType]) {
             continue;
@@ -191,9 +204,11 @@ export default function EventDetailsScreen() {
               const total = orderDetails.total;
 
               if (stockType == "yes") {
+                yesTotal += total;
                 yesArray.push({ id, price: Number(price), quantity: total });
                 id++;
               } else {
+                noTotal += total;
                 noArray.push({ id, price: Number(price), quantity: total });
                 id++;
               }
@@ -201,6 +216,8 @@ export default function EventDetailsScreen() {
           }
         }
 
+        setYesTotalQuantity(yesTotal);
+        setNoTotalQuantity(noTotal);
         setYesData(sortByPrice(yesArray));
         setNoData(sortByPrice(noArray));
       }
@@ -263,8 +280,20 @@ export default function EventDetailsScreen() {
                               <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
                                 {data.price}
                               </td>
-                              <td className="whitespace-nowrap text-end px-3 py-4 text-sm text-gray-500">
-                                {data.quantity}
+
+                              <td className="relative whitespace-nowrap text-end px-3 py-4 text-sm text-gray-500">
+                                <span
+                                  className="absolute top-0 bottom-0 right-0 bg-blue-200"
+                                  style={{
+                                    width: `${
+                                      25 +
+                                      (data.quantity * 100) / yesTotalQuantity
+                                    }%`,
+                                  }}
+                                ></span>
+                                <span className="relative z-10">
+                                  {data.quantity}
+                                </span>
                               </td>
                             </tr>
                           ))}
@@ -298,8 +327,19 @@ export default function EventDetailsScreen() {
                               <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
                                 {data.price}
                               </td>
-                              <td className="whitespace-nowrap text-end px-3 py-4 text-sm text-gray-500">
-                                {data.quantity}
+                              <td className="relative whitespace-nowrap text-end px-3 py-4 text-sm text-gray-500">
+                                <span
+                                  className="absolute top-0 bottom-0 right-0 bg-red-200"
+                                  style={{
+                                    width: `${
+                                      25 +
+                                      (data.quantity * 100) / noTotalQuantity
+                                    }%`,
+                                  }}
+                                ></span>
+                                <span className="relative z-10">
+                                  {data.quantity}
+                                </span>
                               </td>
                             </tr>
                           ))}
@@ -376,9 +416,9 @@ export default function EventDetailsScreen() {
               </div>
               <div className="px-4 py-5 sm:p-6">
                 {/* Content goes here */}
-                <div className="flex flex-col border-2 border-gray-2">
+                <div className="flex flex-col border-1 border-gray-1">
                   <div className="flex border-2 justify-between">
-                    <div>Price</div>
+                    <div className="pl-2">Price</div>
                     <div className="flex justify-around min-w-[150px]">
                       <button>
                         <MinusIcon
@@ -398,8 +438,8 @@ export default function EventDetailsScreen() {
                       </button>
                     </div>
                   </div>
-                  <div className="flex border-2 justify-between">
-                    <div>Quantity</div>
+                  <div className="flex border-2 border-t-0 justify-between">
+                    <div className="pl-2">Quantity</div>
                     <div className="flex justify-around min-w-[150px]">
                       <button>
                         <MinusIcon
