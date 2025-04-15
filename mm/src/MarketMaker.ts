@@ -188,7 +188,7 @@ export class MarketMaker {
 
   public createEventAndMintTokens(event: string) {
     const newEvent = async () => {
-      const deadline = new Date(Date.now() + 3 * 60 * 1000);
+      const deadline = new Date(Date.now() + 4.5 * 60 * 1000);
 
       const resJson = await fetch(
         API_URL + `/symbol/create/${encodeURIComponent(event)}`,
@@ -218,7 +218,7 @@ export class MarketMaker {
           body: JSON.stringify({
             stockSymbol: encodeURIComponent(event),
             userId: user,
-            quantity: 250,
+            quantity: 500,
             price: 1000,
           }),
         });
@@ -233,7 +233,7 @@ export class MarketMaker {
 
       MarketMaker.getInstance().eventList.push(event);
       
-      const addBalanceData = await MarketMaker.getInstance().addBalanceToAllUsers(500000);
+      const addBalanceData = await MarketMaker.getInstance().addBalanceToAllUsers(1000000);
 
       return addBalanceData;
     };
