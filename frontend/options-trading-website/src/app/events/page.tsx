@@ -9,20 +9,35 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { UserContext, UserContextType } from "@/context/UserContext";
 import { API_URL } from "@/config";
-
-type EventDetails = {
-  event: string;
-  yesPrice: number;
-  noPrice: number;
-  endTime: Date;
-  timeLeft: string;
-};
+import { EventDetails, useStockEvents } from "@/utils/useStockEvents";
 
 export default function EventsScreen() {
+  const rawEvents = useStockEvents();
   const [events, setEvents] = useState<EventDetails[]>([]);
   const { setUserId }: UserContextType = useContext(UserContext);
 
   const router = useRouter();
+
+  useEffect(() => {
+    setEvents(rawEvents);
+
+    console.log("events check in main page:- ", rawEvents);
+    const interval = setInterval(() => {
+      setEvents((rawEvents) =>
+        rawEvents.filter((data) => {
+          const diff = new Date(data.endTime).getTime() - Date.now();
+          if (diff > 0) {
+            const minutes = Math.floor(diff / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            data.timeLeft = `${minutes}m ${seconds}s`;
+            return data;
+          }
+        })
+      );
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [rawEvents]);
 
   useEffect(() => {
     fetch(API_URL + "/check-auth", {
@@ -37,87 +52,6 @@ export default function EventsScreen() {
           setUserId(data.user.userId);
         }
       });
-  }, []);
-
-  useEffect(() => {
-    async function fetchData() {
-      const stockendTimesJson = await fetch(`${API_URL}/stockendtimes`);
-
-      const stockEndTimeData = await stockendTimesJson.json();
-
-      const orderbookJson = await fetch(`${API_URL}/orderbook`);
-      const orderbookData = await orderbookJson.json();
-
-      if (!orderbookData) {
-        return;
-      }
-
-      const temp: EventDetails[] = [];
-
-      // console.log("orderbookData:- ", orderbookData);
-
-      orderbookData.forEach((data: any) => {
-        const eventName = data[0];
-        let yP = 10,
-          nP = 0;
-
-        if (data[1].hasOwnProperty("no") && data[1].hasOwnProperty("yes")) {
-          const noData = Object.entries(data[1].no);
-
-          noData.forEach((noPoint) => {
-            nP = Math.max(nP, Number(noPoint[0]));
-          });
-
-          const yesData = Object.entries(data[1].yes);
-          yesData.forEach((yesPoint) => {
-            yP = Math.min(yP, Number(yesPoint[0]));
-          });
-
-          let res = "";
-          const diff =
-            new Date(stockEndTimeData[eventName]).getTime() -
-            new Date().getTime();
-          if (diff > 0) {
-            const minutes = Math.floor(diff / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            res = `${minutes}m ${seconds}s`;
-          }
-
-          if (res !== "") {
-            temp.push({
-              event: eventName,
-              yesPrice: yP,
-              noPrice: nP,
-              endTime: stockEndTimeData[eventName],
-              timeLeft: res,
-            });
-          }
-        }
-      });
-
-      // console.log("temp check:- ", temp);
-
-      setEvents(temp);
-      const interval = setInterval(() => {
-        setEvents((temp) => {
-          return temp.filter((data) => {
-            const diff =
-              new Date(data.endTime).getTime() - new Date().getTime();
-            if (diff > 0) {
-              const minutes = Math.floor(diff / (1000 * 60));
-              const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-              data.timeLeft = `${minutes}m ${seconds}s`;
-              return data;
-            }
-          });
-        });
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-
-    fetchData();
-    setInterval(fetchData, 10 * 1000);
   }, []);
 
   return (

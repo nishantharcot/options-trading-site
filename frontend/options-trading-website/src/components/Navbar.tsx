@@ -30,12 +30,7 @@ import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { UserContext, UserContextType } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/config";
-
-type EventDetails = {
-  event: string;
-  yesPrice: number;
-  noPrice: number;
-};
+import { EventDetails, useStockEvents } from "@/utils/useStockEvents";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -53,6 +48,7 @@ export default function Navbar() {
   const [mintPrice, setmintPrice] = useState<number>(3.5);
   const [mintNumberOfTokens, setmintNumberOfTokens] = useState<number>();
 
+  const rawEvents = useStockEvents();
   const [events, setEvents] = useState<EventDetails[]>([]);
 
   const [showNotification, setshowNotification] = useState(false);
@@ -60,46 +56,14 @@ export default function Navbar() {
   const [notificationSuccess, setnotificationSuccess] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/orderbook`)
-      .then((res) => res.json())
-      .then((finalRes) => {
-        const events: EventDetails[] = [];
+    setEvents(rawEvents);
 
-        if (!finalRes) {
-          return;
-        }
+    console.log("events check in navbar:- ", rawEvents);
 
-        finalRes.forEach((data: any) => {
-          const eventName = data[0];
-          let yP = 10,
-            nP = 10;
-
-          if (data[1].hasOwnProperty("no") && data[1].hasOwnProperty("yes")) {
-            const noData = Object.entries(data[1].no);
-            noData.forEach((data) => {
-              nP = Math.min(nP, Number(data[0][0]));
-            });
-
-            const yesData = Object.entries(data[1].yes);
-            yesData.forEach((data) => {
-              yP = Math.min(yP, Number(data[0][0]));
-            });
-
-            events.push({
-              event: eventName,
-              yesPrice: yP,
-              noPrice: nP,
-            });
-          }
-        });
-
-        setEvents(events);
-        console.log("events check in navbar:- ", events);
-        if (events.length) {
-          setmintEventSelected(events[0].event);
-        }
-      });
-  }, []);
+    if (rawEvents.length) {
+      setmintEventSelected(rawEvents[0].event);
+    }
+  }, [rawEvents]);
 
   const handleNumberOfTokens = (e: React.ChangeEvent<HTMLInputElement>) => {
     setmintNumberOfTokens(Number(e.target.value));
