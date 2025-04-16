@@ -68,7 +68,7 @@ export default function EventsScreen() {
             return (
               <div
                 key={index}
-                className="overflow-hidden rounded-lg bg-white shadow"
+                className="overflow-hidden cursor-pointer rounded-lg bg-white shadow"
                 onClick={() => {
                   router.push(
                     "/events/" +

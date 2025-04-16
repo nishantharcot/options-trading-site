@@ -204,7 +204,7 @@ export default function Navbar() {
                 />
               </DisclosureButton>
             </div>
-            <div className="md:flex hidden shrink-0 items-center">
+            <div className="md:flex hidden cursor-pointer shrink-0 items-center">
               <Image
                 onClick={() => router.push("/events")}
                 src="/optixchanges-logo.png"

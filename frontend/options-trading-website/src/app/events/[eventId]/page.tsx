@@ -243,7 +243,7 @@ export default function EventDetailsScreen() {
     <>
       <Navbar />
       <div className="mx-auto mt-12 max-w-7xl px-4 sm:px-6 lg:px-8 text-gray-900">
-        <div className="flex justify-between border-b border-gray-200 pb-5">
+        <div className="flex flex-col md:flex-row gap-y-2 justify-between border-b border-gray-200 pb-5">
           <h3 className="text-base font-semibold text-gray-900">
             {decodedEventId}
           </h3>
