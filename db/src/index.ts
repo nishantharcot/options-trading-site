@@ -85,59 +85,66 @@ async function saveToDb() {
 async function loadStateFromSnapshots() {
   console.log("Loading snapshots from local file system...");
 
-  // Load Order Book
-  if (fs.existsSync(filePath + "order_book_snapshot.json")) {
-    const raw = fs.readFileSync(filePath + "order_book_snapshot.json", "utf-8");
+  try {
+    // Load Order Book
+    if (fs.existsSync(filePath + "order_book_snapshot.json")) {
+      const raw = fs.readFileSync(
+        filePath + "order_book_snapshot.json",
+        "utf-8"
+      );
 
-    console.log("raw check:- ", raw);
+      console.log("raw check:- ", raw);
 
-    const deserialized = deserializeOrderBook(raw);
-    STATE.ORDERBOOK = orderBookToMongoose(deserialized);
-    console.log("Loaded order book snapshot.");
-  }
+      const deserialized = deserializeOrderBook(raw);
+      STATE.ORDERBOOK = orderBookToMongoose(deserialized);
+      console.log("Loaded order book snapshot.");
+    }
 
-  // Load INR Balances
-  if (fs.existsSync(filePath + "inr_balances_snapshot.json")) {
-    const raw = fs.readFileSync(
-      filePath + "inr_balances_snapshot.json",
-      "utf-8"
-    );
-    const deserialized = deserializeInrBalances(raw);
-    STATE.INR_BALANCES = inrBalancesToMongoose(deserialized);
-    console.log("Loaded INR balances snapshot.");
-  }
+    // Load INR Balances
+    if (fs.existsSync(filePath + "inr_balances_snapshot.json")) {
+      const raw = fs.readFileSync(
+        filePath + "inr_balances_snapshot.json",
+        "utf-8"
+      );
+      const deserialized = deserializeInrBalances(raw);
+      STATE.INR_BALANCES = inrBalancesToMongoose(deserialized);
+      console.log("Loaded INR balances snapshot.");
+    }
 
-  // Load Stock Balances
-  if (fs.existsSync(filePath + "stock_balances_snapshot.json")) {
-    const raw = fs.readFileSync(
-      filePath + "stock_balances_snapshot.json",
-      "utf-8"
-    );
-    const deserialized = deserializeStockBalances(raw);
-    STATE.STOCK_BALANCES = stockBalancesToMongoose(deserialized);
-    console.log("Loaded stock balances snapshot.");
-  }
+    // Load Stock Balances
+    if (fs.existsSync(filePath + "stock_balances_snapshot.json")) {
+      const raw = fs.readFileSync(
+        filePath + "stock_balances_snapshot.json",
+        "utf-8"
+      );
+      const deserialized = deserializeStockBalances(raw);
+      STATE.STOCK_BALANCES = stockBalancesToMongoose(deserialized);
+      console.log("Loaded stock balances snapshot.");
+    }
 
-  // Load Order Queues
-  if (fs.existsSync(filePath + "order_queues_snapshot.json")) {
-    const raw = fs.readFileSync(
-      filePath + "order_queues_snapshot.json",
-      "utf-8"
-    );
-    const deserialized = deserializeOrderQueues(raw);
-    STATE.ORDER_QUEUES = orderQueuesToMongoose(deserialized);
-    console.log("Loaded order queues snapshot.");
-  }
+    // Load Order Queues
+    if (fs.existsSync(filePath + "order_queues_snapshot.json")) {
+      const raw = fs.readFileSync(
+        filePath + "order_queues_snapshot.json",
+        "utf-8"
+      );
+      const deserialized = deserializeOrderQueues(raw);
+      STATE.ORDER_QUEUES = orderQueuesToMongoose(deserialized);
+      console.log("Loaded order queues snapshot.");
+    }
 
-  // Load Stock End Times
-  if (fs.existsSync(filePath + "stock_endtimes_snapshot.json")) {
-    const raw = fs.readFileSync(
-      filePath + "stock_endtimes_snapshot.json",
-      "utf-8"
-    );
-    const deserialized = deserializeStockEndTimes(raw);
-    STATE.STOCK_END_TIMES = stockEndTimesToMongoose(deserialized);
-    console.log("Loaded stock endtimes snapshot.");
+    // Load Stock End Times
+    if (fs.existsSync(filePath + "stock_endtimes_snapshot.json")) {
+      const raw = fs.readFileSync(
+        filePath + "stock_endtimes_snapshot.json",
+        "utf-8"
+      );
+      const deserialized = deserializeStockEndTimes(raw);
+      STATE.STOCK_END_TIMES = stockEndTimesToMongoose(deserialized);
+      console.log("Loaded stock endtimes snapshot.");
+    }
+  } catch (e) {
+    console.error("error: ", e);
   }
 }
 
