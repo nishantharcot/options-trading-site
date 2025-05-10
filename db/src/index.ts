@@ -88,6 +88,9 @@ async function loadStateFromSnapshots() {
   // Load Order Book
   if (fs.existsSync(filePath + "order_book_snapshot.json")) {
     const raw = fs.readFileSync(filePath + "order_book_snapshot.json", "utf-8");
+
+    console.log("raw check:- ", raw);
+
     const deserialized = deserializeOrderBook(raw);
     STATE.ORDERBOOK = orderBookToMongoose(deserialized);
     console.log("Loaded order book snapshot.");
@@ -95,7 +98,10 @@ async function loadStateFromSnapshots() {
 
   // Load INR Balances
   if (fs.existsSync(filePath + "inr_balances_snapshot.json")) {
-    const raw = fs.readFileSync(filePath + "inr_balances_snapshot.json", "utf-8");
+    const raw = fs.readFileSync(
+      filePath + "inr_balances_snapshot.json",
+      "utf-8"
+    );
     const deserialized = deserializeInrBalances(raw);
     STATE.INR_BALANCES = inrBalancesToMongoose(deserialized);
     console.log("Loaded INR balances snapshot.");
@@ -103,7 +109,10 @@ async function loadStateFromSnapshots() {
 
   // Load Stock Balances
   if (fs.existsSync(filePath + "stock_balances_snapshot.json")) {
-    const raw = fs.readFileSync(filePath + "stock_balances_snapshot.json", "utf-8");
+    const raw = fs.readFileSync(
+      filePath + "stock_balances_snapshot.json",
+      "utf-8"
+    );
     const deserialized = deserializeStockBalances(raw);
     STATE.STOCK_BALANCES = stockBalancesToMongoose(deserialized);
     console.log("Loaded stock balances snapshot.");
@@ -111,7 +120,10 @@ async function loadStateFromSnapshots() {
 
   // Load Order Queues
   if (fs.existsSync(filePath + "order_queues_snapshot.json")) {
-    const raw = fs.readFileSync(filePath + "order_queues_snapshot.json", "utf-8");
+    const raw = fs.readFileSync(
+      filePath + "order_queues_snapshot.json",
+      "utf-8"
+    );
     const deserialized = deserializeOrderQueues(raw);
     STATE.ORDER_QUEUES = orderQueuesToMongoose(deserialized);
     console.log("Loaded order queues snapshot.");
@@ -119,7 +131,10 @@ async function loadStateFromSnapshots() {
 
   // Load Stock End Times
   if (fs.existsSync(filePath + "stock_endtimes_snapshot.json")) {
-    const raw = fs.readFileSync(filePath + "stock_endtimes_snapshot.json", "utf-8");
+    const raw = fs.readFileSync(
+      filePath + "stock_endtimes_snapshot.json",
+      "utf-8"
+    );
     const deserialized = deserializeStockEndTimes(raw);
     STATE.STOCK_END_TIMES = stockEndTimesToMongoose(deserialized);
     console.log("Loaded stock endtimes snapshot.");
@@ -131,9 +146,9 @@ async function main() {
     await redisClient.connect();
     await pubClient.connect();
     await subClient.connect();
-  
+
     await mongoose.connect(process.env.MONGO_URL!);
-  
+
     console.log("connected to DB");
 
     await loadStateFromSnapshots();
@@ -146,10 +161,9 @@ async function main() {
       }
     });
 
-    setInterval(saveToDb, 10*60*1000);
-  
-    while (true) {
+    setInterval(saveToDb, 10 * 60 * 1000);
 
+    while (true) {
       const response = await redisClient.brPop(
         [
           "db_server:orderbook",
@@ -164,51 +178,82 @@ async function main() {
       if (!response?.element) continue;
 
       const { key, element } = response;
-      
+
       switch (key) {
         case "db_server:orderbook":
-          fs.writeFile(filePath + "order_book_snapshot.json", element, (err) => {
-            if (err) console.error("Error writing order book snapshot:", err);
-          });
+          fs.writeFile(
+            filePath + "order_book_snapshot.json",
+            element,
+            (err) => {
+              if (err) console.error("Error writing order book snapshot:", err);
+            }
+          );
           STATE.ORDERBOOK = orderBookToMongoose(deserializeOrderBook(element));
           break;
-    
+
         case "db_server:inr_balances":
-          fs.writeFile(filePath + "inr_balances_snapshot.json", element, (err) => {
-            if (err) console.error("Error writing INR balances snapshot:", err);
-          });
-          STATE.INR_BALANCES = inrBalancesToMongoose(deserializeInrBalances(element));
+          fs.writeFile(
+            filePath + "inr_balances_snapshot.json",
+            element,
+            (err) => {
+              if (err)
+                console.error("Error writing INR balances snapshot:", err);
+            }
+          );
+          STATE.INR_BALANCES = inrBalancesToMongoose(
+            deserializeInrBalances(element)
+          );
           break;
-    
+
         case "db_server:stock_balances":
-          fs.writeFile(filePath + "stock_balances_snapshot.json", element, (err) => {
-            if (err) console.error("Error writing stock balances snapshot:", err);
-          });
-          STATE.STOCK_BALANCES = stockBalancesToMongoose(deserializeStockBalances(element));
+          fs.writeFile(
+            filePath + "stock_balances_snapshot.json",
+            element,
+            (err) => {
+              if (err)
+                console.error("Error writing stock balances snapshot:", err);
+            }
+          );
+          STATE.STOCK_BALANCES = stockBalancesToMongoose(
+            deserializeStockBalances(element)
+          );
           break;
-    
+
         case "db_server:order_queues":
-          fs.writeFile(filePath + "order_queues_snapshot.json", element, (err) => {
-            if (err) console.error("Error writing order queues snapshot:", err);
-          });
-          STATE.ORDER_QUEUES = orderQueuesToMongoose(deserializeOrderQueues(element));
+          fs.writeFile(
+            filePath + "order_queues_snapshot.json",
+            element,
+            (err) => {
+              if (err)
+                console.error("Error writing order queues snapshot:", err);
+            }
+          );
+          STATE.ORDER_QUEUES = orderQueuesToMongoose(
+            deserializeOrderQueues(element)
+          );
           break;
-    
+
         case "db_server:stock_endtimes":
-          fs.writeFile(filePath + "stock_endtimes_snapshot.json", element, (err) => {
-            if (err) console.error("Error writing stock endtimes snapshot:", err);
-          });
-          STATE.STOCK_END_TIMES = stockEndTimesToMongoose(deserializeStockEndTimes(element));
+          fs.writeFile(
+            filePath + "stock_endtimes_snapshot.json",
+            element,
+            (err) => {
+              if (err)
+                console.error("Error writing stock endtimes snapshot:", err);
+            }
+          );
+          STATE.STOCK_END_TIMES = stockEndTimesToMongoose(
+            deserializeStockEndTimes(element)
+          );
           break;
-    
+
         default:
           console.warn("Unhandled key:", key);
           break;
       }
     }
-
-  } catch(e) {
-    console.log('error:- ', e);
+  } catch (e) {
+    console.log("error:- ", e);
   }
 }
 
